@@ -5,6 +5,9 @@ import React, { useState } from "react";
 import SharedSelect from "./_components/SharedSelect";
 import SharedRadioGroup from "./_components/SharedRadioGroup";
 import FilterTabs from "./_components/FilterTabs";
+import AirportSearch from "./_components/AirportSearch";
+import { Airport } from "./data/airports";
+import { IoAirplaneOutline, IoAirplaneSharp } from "react-icons/io5";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState(0);
@@ -13,6 +16,8 @@ export default function Home() {
   const [infant, setInfant] = useState(0);
   const [flightClass, setFlightClass] = useState("Economy");
   const [selectedFlight, setSelectedFlight] = useState("roundWay");
+  const [fromAirport, setFromAirport] = useState<Airport | null>(null);
+  const [toAirport, setToAirport] = useState<Airport | null>(null);
 
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFlight(event.target.value);
@@ -44,64 +49,42 @@ export default function Home() {
         </div>
 
         {/* Search Section */}
-        <div className="relative mt-10 max-w-[1200px] mx-auto grid grid-cols-3">
+        <div className="relative mt-6 max-w-[1200px] mx-auto grid lg:grid-cols-3">
           {/* Left Section */}
-          <div className="col-span-2 gap-4 bg-white rounded-xl p-6 border-dotted border-gray-300 border-r-2">
+          <div className="lg:col-span-2 gap-4 bg-white rounded-xl p-5 border-dotted border-gray-300 border-b-2 lg:border-r-2">
             <SharedRadioGroup
               value={selectedFlight}
               onChange={handleRadioChange}
               options={radioOptions}
             />
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-gray-600 font-medium mb-1">
-                  FROM
-                </label>
-                <div className="bg-gray-100 rounded-lg p-3 flex items-center">
-                  <span className="text-[#32d095] font-bold mr-2">DAC</span>
-                  <span className="text-gray-500">
-                    Hazrat Shahjalal Intl Airport (DAC)
-                  </span>
+            <div className="grid grid-cols-7 gap-4 mt-4">
+              <div className="lg:col-span-3 col-span-7">
+                <AirportSearch
+                  label="FROM"
+                  value={fromAirport}
+                  onChange={setFromAirport}
+                />
+              </div>
+              <div className=" text-[#32d095] relative hidden lg:block col-span-1">
+                <div>
+                  <IoAirplaneSharp size={70} />
+                </div>
+                <div className="rotate-180 absolute top-10 left-2">
+                  <IoAirplaneOutline size={70} />
                 </div>
               </div>
-
-              {/* To Section */}
-              <div>
-                <label className="block text-gray-600 font-medium mb-1">
-                  TO
-                </label>
-                <div className="bg-gray-100 rounded-lg p-3 flex items-center">
-                  <span className="text-[#32d095] font-bold mr-2">CXB</span>
-                  <span className="text-gray-500">
-                    Coxs Bazar Airport (CXB)
-                  </span>
-                </div>
-              </div>
-
-              {/* Departure Date */}
-              <div>
-                <label className="block text-gray-600 font-medium mb-1">
-                  DEPARTURE
-                </label>
-                <div className="bg-gray-100 rounded-lg p-3 flex items-center">
-                  <span className="text-gray-500">11 Apr 25</span>
-                </div>
-              </div>
-
-              {/* Return Date */}
-              <div>
-                <label className="block text-gray-600 font-medium mb-1">
-                  RETURN
-                </label>
-                <div className="bg-gray-100 rounded-lg p-3 flex items-center">
-                  <span className="text-gray-500">13 Apr 25</span>
-                </div>
+              <div className="lg:col-span-3 col-span-7">
+                <AirportSearch
+                  label="TO"
+                  value={toAirport}
+                  onChange={setToAirport}
+                />
               </div>
             </div>
           </div>
 
           {/* Right Section */}
-          <div className="flex flex-col justify-between gap-4 bg-white rounded-xl p-6">
+          <div className="flex flex-col justify-between gap-4 bg-white rounded-xl p-6 col-span-1">
             {/* Passengers */}
             <div>
               <div className="grid grid-cols-3 gap-4">
@@ -147,7 +130,7 @@ export default function Home() {
             </div>
 
             {/* Search Button */}
-            <button className="w-full bg-[#32d095] text-white font-bold py-2 text-sm rounded-sm  cursor-pointer">
+            <button className="w-full bg-[#32d095] text-white font-bold py-2 text-sm rounded-sm cursor-pointer">
               SEARCH FOR FLIGHT
             </button>
           </div>
