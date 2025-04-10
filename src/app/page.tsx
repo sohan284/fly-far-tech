@@ -8,6 +8,7 @@ import FilterTabs from "./_components/FilterTabs";
 import AirportSearch from "./_components/AirportSearch";
 import { Airport } from "./data/airports";
 import { IoAirplaneOutline, IoAirplaneSharp } from "react-icons/io5";
+import DateCalender from "./_components/DateCalender";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState(0);
@@ -18,6 +19,8 @@ export default function Home() {
   const [selectedFlight, setSelectedFlight] = useState("roundWay");
   const [fromAirport, setFromAirport] = useState<Airport | null>(null);
   const [toAirport, setToAirport] = useState<Airport | null>(null);
+  const [departureDate, setDepartureDate] = useState<Date | null>(null);
+  const [returnDate, setReturnDate] = useState<Date | null>(null);
 
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedFlight(event.target.value);
@@ -51,7 +54,7 @@ export default function Home() {
         {/* Search Section */}
         <div className="relative mt-6 max-w-[1200px] mx-auto grid lg:grid-cols-3">
           {/* Left Section */}
-          <div className="lg:col-span-2 gap-4 bg-white rounded-xl p-5 border-dotted border-gray-300 border-b-2 lg:border-r-2">
+          <div className="lg:col-span-2 gap-4 bg-white rounded-xl p-5 border-dotted border-gray-300 border-b-2 lg:border-b-0 lg:border-r-2">
             <SharedRadioGroup
               value={selectedFlight}
               onChange={handleRadioChange}
@@ -64,6 +67,12 @@ export default function Home() {
                   value={fromAirport}
                   onChange={setFromAirport}
                 />
+                <div className="mt-3">
+                  <DateCalender
+                    selectedDate={departureDate}
+                    setSelectedDate={setDepartureDate}
+                  />
+                </div>
               </div>
               <div className=" text-[#32d095] relative hidden lg:block col-span-1">
                 <div>
@@ -79,6 +88,12 @@ export default function Home() {
                   value={toAirport}
                   onChange={setToAirport}
                 />
+                <div className="mt-3">
+                  <DateCalender
+                    selectedDate={returnDate}
+                    setSelectedDate={setReturnDate}
+                  />
+                </div>
               </div>
             </div>
           </div>

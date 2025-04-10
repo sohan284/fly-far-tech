@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Airport, airports } from "../data/airports";
 import { RiMapPin2Line } from "react-icons/ri";
-
 interface AirportSearchProps {
   label: string;
   value: Airport | null;
@@ -66,7 +65,6 @@ const AirportSearch: React.FC<AirportSearchProps> = ({
           )}
         </>
       </div>
-
       {isOpen && (
         <div className="absolute z-10 w-full mt-1 bg-[#32d095] shadow-lg border border-gray-200 max-h-60 overflow-y-auto">
           <div className="p-2">
