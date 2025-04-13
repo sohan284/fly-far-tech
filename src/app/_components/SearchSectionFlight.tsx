@@ -4,17 +4,23 @@ import SharedRadioGroup from "./SharedRadioGroup";
 import AirportSearch from "./AirportSearch";
 import DateCalender from "./DateCalender";
 import SharedSelect from "./SharedSelect";
-import { Airport } from "../data/airports";
+import { Airport, airports } from "../data/airports";
 import CryptoJS from "crypto-js";
+import { useRouter } from "next/navigation";
 
 const SearchSectionFlight = () => {
+  const router = useRouter();
   const [adult, setAdult] = useState(1);
   const [child, setChild] = useState(0);
   const [infant, setInfant] = useState(0);
   const [flightClass, setFlightClass] = useState("Economy");
   const [selectedFlight, setSelectedFlight] = useState("roundWay");
-  const [fromAirport, setFromAirport] = useState<Airport | null>(null);
-  const [toAirport, setToAirport] = useState<Airport | null>(null);
+  const [fromAirport, setFromAirport] = useState<Airport | null>(
+    airports.find((airport) => airport.code === "DAC") || null
+  );
+  const [toAirport, setToAirport] = useState<Airport | null>(
+    airports.find((airport) => airport.code === "DAC") || null
+  );
   const [departureDate, setDepartureDate] = useState<Date | null>(null);
   const [returnDate, setReturnDate] = useState<Date | null>(null);
   const [isZoomedIn, setIsZoomedIn] = useState(true);
@@ -57,8 +63,7 @@ const SearchSectionFlight = () => {
 
     // Save the encrypted data to local storage
     localStorage.setItem("searchData", encryptedData);
-
-    console.log("Encrypted search data saved:", encryptedData);
+    router.push("/flight-search-result");
   };
 
   const radioOptions = [

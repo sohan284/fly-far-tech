@@ -1,13 +1,23 @@
+"use client";
 import Image from "next/image";
 import React from "react";
 import logo from "@/app/assets/logo.png";
 import { Button } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
+  const router = useRouter();
   return (
     <div className="px-3">
       <div className="flex justify-between items-center max-w-[1150px] mx-auto pt-4">
-        <Image src={logo} alt="Company Logo" width={140} height={60} />
+        <Image
+          onClick={() => router.push("/")}
+          className="cursor-pointer"
+          src={logo}
+          alt="Company Logo"
+          width={140}
+          height={60}
+        />
         <div>
           <Button
             size="small"
