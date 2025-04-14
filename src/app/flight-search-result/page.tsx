@@ -18,18 +18,25 @@ interface Passengers {
 }
 
 interface Flight {
-  id: string;
   airline: string;
-  airlineLogo?: string;
-  flightType: string;
-  from: { code: string };
-  to: { code: string };
-  departureDate: string;
-  returnDate?: string;
-  flightClass: string;
-  passengers: Passengers;
+  airlineLogo: string;
   price: number;
-  duration?: number;
+  from: { code: string; name: string };
+  to: { code: string; name: string };
+  departureDate: string;
+  flightType: string;
+  flightClass: string;
+  duration: string;
+  departureTime: string;
+  arrivalTime: string;
+  returnDate: string;
+  returnArrivalTime: string;
+  returnDepartureTime: string;
+  passengers: {
+    adult: number | null;
+    child: number | null;
+    infant: number | null;
+  };
 }
 
 interface SearchData {
@@ -53,7 +60,7 @@ interface FilterState {
 const FlightSearchResultPage = () => {
   const [searchData, setSearchData] = useState<SearchData | null>(null);
   const [filteredFlights, setFilteredFlights] = useState<Flight[]>([]);
-  const [sortBy, setSortBy] = useState<"cheapest" | "fastest">("cheapest");
+  const [sortBy] = useState<"cheapest" | "fastest">("cheapest");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
   const [filters, setFilters] = useState<FilterState>({
     refundable: false,
@@ -66,17 +73,17 @@ const FlightSearchResultPage = () => {
   // State to control the visibility of SearchSectionFlight
   const [showSearchSection, setShowSearchSection] = useState(false);
 
-  const normalizeDate = (dateString: string | undefined): string | null => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return null;
+  // const normalizeDate = (dateString: string | undefined): string | null => {
+  //   if (!dateString) return null;
+  //   const date = new Date(dateString);
+  //   if (isNaN(date.getTime())) return null;
 
-    return new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-    )
-      .toISOString()
-      .split("T")[0];
-  };
+  //   return new Date(
+  //     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  //   )
+  //     .toISOString()
+  //     .split("T")[0];
+  // };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -90,52 +97,49 @@ const FlightSearchResultPage = () => {
           ) as SearchData;
           setSearchData(decryptedData);
 
-          const normalizedDepartureDate = decryptedData.departureDate
-            ? normalizeDate(decryptedData.departureDate)
-            : null;
-          const normalizedReturnDate = decryptedData.returnDate
-            ? normalizeDate(decryptedData.returnDate)
-            : null;
+          // const normalizedDepartureDate = decryptedData.departureDate
+          //   ? normalizeDate(decryptedData.departureDate)
+          //   : null;
+          // const normalizedReturnDate = decryptedData.returnDate
+          //   ? normalizeDate(decryptedData.returnDate)
+          //   : null;
           const matchingFlights = flights.filter((flight) => {
-            const isFlightTypeMatch =
-              decryptedData.selectedFlight === flight.flightType;
-            const isFromMatch =
-              decryptedData.fromAirport?.code === flight.from.code;
+            const isFlightTypeMatch = decryptedData.selectedFlight === flight.flightType;
+            const isFromMatch = decryptedData.fromAirport?.code === flight.from.code;
             const isToMatch = decryptedData.toAirport?.code === flight.to.code;
-            const isClassMatch =
-              decryptedData.flightClass === flight.flightClass;
+            const isClassMatch = decryptedData.flightClass === flight.flightClass;
 
             return (
               isFlightTypeMatch && isFromMatch && isToMatch && isClassMatch
             );
-          });
-
+          }) as unknown as Flight[];  // Add type assertion here
+          
           setFilteredFlights(matchingFlights);
         } catch (error) {
           console.error("Error decrypting search data:", error);
         }
       } else {
         // If no search data is found, show all flights
-        setFilteredFlights(flights as Flight[]);
+        setFilteredFlights(flights as unknown as Flight[]);
       }
     }
   }, []);
 
-  const handleSortChange = (type: "cheapest" | "fastest"): void => {
-    setSortBy(type);
+  // const handleSortChange = (type: "cheapest" | "fastest"): void => {
+  //   setSortBy(type);
 
-    // Sort flights by price or duration
-    const sortedFlights = [...filteredFlights].sort((a, b) => {
-      if (type === "cheapest") {
-        return a.price - b.price;
-      } else {
-        // For fastest, we would need a duration field
-        return (a.duration || 0) - (b.duration || 0);
-      }
-    });
+  //   // Sort flights by price or duration
+  //   const sortedFlights = [...filteredFlights].sort((a, b) => {
+  //     if (type === "cheapest") {
+  //       return a.price - b.price;
+  //     } else {
+  //       // For fastest, we would need a duration field
+  //       return (a.duration || 0) - (b.duration || 0);
+  //     }
+  //   });
 
-    setFilteredFlights(sortedFlights);
-  };
+  //   setFilteredFlights(sortedFlights);
+  // };
   const totalPassengers = parseInt(
     String(
       (searchData?.passengers?.adult || 0) +
@@ -218,7 +222,7 @@ const FlightSearchResultPage = () => {
                     ? "bg-green-500 text-white"
                     : "bg-gray-200"
                 }`}
-                onClick={() => handleSortChange("cheapest")}
+                // onClick={() => handleSortChange("cheapest")}
               >
                 CHEAPEST
               </button>
@@ -228,7 +232,7 @@ const FlightSearchResultPage = () => {
                     ? "bg-green-500 text-white"
                     : "bg-gray-200"
                 }`}
-                onClick={() => handleSortChange("fastest")}
+                // onClick={() => handleSortChange("fastest")}
               >
                 FASTEST
               </button>
@@ -358,7 +362,6 @@ const FlightSearchResultPage = () => {
               filteredFlights.map((flight, index) => (
                 <FlightCard
                   flight={{ ...flight, airlineLogo: flight.airlineLogo || "" }}
-                  passengers={totalPassengers}
                   key={index}
                 />
               ))

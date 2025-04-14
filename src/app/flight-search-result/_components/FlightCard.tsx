@@ -17,6 +17,11 @@ interface Flight {
   returnDate: string;
   returnArrivalTime: string;
   returnDepartureTime: string;
+  passengers: {
+    adult: number | null;
+    child: number | null;
+    infant: number | null;
+  };
 }
 
 const FlightCard = ({ flight }: { flight: Flight }) => {

@@ -19,7 +19,7 @@ export default function CarouselHome() {
     autoplay: true,
     autoplaySpeed: 5000,
     arrows: false,
-    appendDots: (dots) => (
+    appendDots: (dots : string) => (
       <div
         style={{
           position: "absolute",

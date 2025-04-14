@@ -30,11 +30,13 @@ const CardContents = ({ flight }: { flight: Flight }) => {
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return `${date.toLocaleDateString("en-US", {
-      weekday: "short",
-    })} ${date.getDate()} ${date.toLocaleDateString("en-US", {
-      month: "short",
-    })} ${date.getFullYear()}`;
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+    return formatter.format(date);
   };
 
   const handleFlightToggle = (value: boolean) => {

@@ -36,22 +36,4 @@ export const airports: Airport[] = [
     city: "Sylhet",
     country: "Bangladesh"
   },
-  {
-    code: "JFK",
-    name: "John F. Kennedy International Airport",
-    city: "New York",
-    country: "United States"
-  },
-  {
-    code: "LHR",
-    name: "London Heathrow Airport",
-    city: "London",
-    country: "United Kingdom"
-  },
-  {
-    code: "DXB",
-    name: "Dubai International Airport",
-    city: "Dubai",
-    country: "United Arab Emirates"
-  }
 ]; 

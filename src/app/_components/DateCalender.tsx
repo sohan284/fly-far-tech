@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { SlCalender } from "react-icons/sl";
 import { FaAngleDown } from "react-icons/fa";
-export default function DateCalender({ selectedDate, setSelectedDate }) {
+interface DateCalenderProps {
+  selectedDate: Date | null;
+  setSelectedDate: (date: Date) => void;
+}
+
+export default function DateCalender({ selectedDate, setSelectedDate }: DateCalenderProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showMonthSelector, setShowMonthSelector] = useState(false);
@@ -11,7 +16,8 @@ export default function DateCalender({ selectedDate, setSelectedDate }) {
   const today = new Date();
 
   // Format date as DD MMM YY
-  const formatDate = (date) => {
+  const formatDate = (date: Date | null): string => {
+    if (!date) return "Select date";
     const day = date.getDate();
     const month = date.toLocaleString("default", { month: "short" });
     const year = date.getFullYear().toString().substr(-2);
@@ -19,24 +25,22 @@ export default function DateCalender({ selectedDate, setSelectedDate }) {
   };
 
   // Handle date selection
-  const handleDateSelect = (date) => {
-    setSelectedDate(formatDate(date));
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
     setShowCalendar(false);
   };
 
   // Get days in month
-  const getDaysInMonth = (year, month) => {
+  // Add types to these functions
+  const getDaysInMonth = (year: number, month: number): number => {
     return new Date(year, month + 1, 0).getDate();
   };
 
-  // Get day of week for first day of month (0 = Sunday, 6 = Saturday)
-  const getFirstDayOfMonth = (year, month) => {
+  const getFirstDayOfMonth = (year: number, month: number): number => {
     return new Date(year, month, 1).getDay();
   };
 
-  // Check if date is in the past
-  const isDateInPast = (date) => {
-    // Reset hours to compare just the dates
+  const isDateInPast = (date: Date): boolean => {
     const compareDate = new Date(date);
     compareDate.setHours(0, 0, 0, 0);
 
@@ -44,6 +48,43 @@ export default function DateCalender({ selectedDate, setSelectedDate }) {
     compareToday.setHours(0, 0, 0, 0);
 
     return compareDate < compareToday;
+  };
+
+  const handleMonthSelect = (monthIndex: number): void => {
+    if (
+      currentMonth.getFullYear() === today.getFullYear() &&
+      monthIndex < today.getMonth()
+    ) {
+      return;
+    }
+
+    const newDate = new Date(currentMonth);
+    newDate.setMonth(monthIndex);
+    setCurrentMonth(newDate);
+    setShowMonthSelector(false);
+  };
+
+  const handleYearSelect = (year: number): void => {
+    const newDate = new Date(currentMonth);
+    newDate.setFullYear(year);
+
+    if (year === today.getFullYear() && newDate.getMonth() < today.getMonth()) {
+      newDate.setMonth(today.getMonth());
+    }
+
+    setCurrentMonth(newDate);
+    setShowYearSelector(false);
+  };
+
+  const generateYearOptions = (): number[] => {
+    const years: number[] = [];
+    const currentYear = today.getFullYear();
+
+    for (let i = 0; i <= 10; i++) {
+      years.push(currentYear + i);
+    }
+
+    return years;
   };
 
   // Generate calendar days
@@ -111,48 +152,6 @@ export default function DateCalender({ selectedDate, setSelectedDate }) {
     );
   };
 
-  // Handle month selection
-  const handleMonthSelect = (monthIndex) => {
-    // Don't allow selecting months in the past for current year
-    if (
-      currentMonth.getFullYear() === today.getFullYear() &&
-      monthIndex < today.getMonth()
-    ) {
-      return;
-    }
-
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(monthIndex);
-    setCurrentMonth(newDate);
-    setShowMonthSelector(false);
-  };
-
-  // Handle year selection
-  const handleYearSelect = (year) => {
-    const newDate = new Date(currentMonth);
-    newDate.setFullYear(year);
-
-    // If selected year is current year and month is in past, set to current month
-    if (year === today.getFullYear() && newDate.getMonth() < today.getMonth()) {
-      newDate.setMonth(today.getMonth());
-    }
-
-    setCurrentMonth(newDate);
-    setShowYearSelector(false);
-  };
-
-  // Generate list of years (current year + 10 years ahead)
-  const generateYearOptions = () => {
-    const years = [];
-    const currentYear = today.getFullYear();
-
-    for (let i = 0; i <= 10; i++) {
-      years.push(currentYear + i);
-    }
-
-    return years;
-  };
-
   const months = [
     "January",
     "February",
@@ -179,7 +178,7 @@ export default function DateCalender({ selectedDate, setSelectedDate }) {
           <SlCalender size={20} className="text-white" />
         </div>
         <span className={`${selectedDate ? "text-gray-800" : "text-gray-400"}`}>
-          {selectedDate || "Select date"}
+          {formatDate(selectedDate)}
         </span>
       </div>
 

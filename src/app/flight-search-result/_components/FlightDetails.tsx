@@ -27,7 +27,11 @@ interface Flight {
   returnDate: string;
   returnArrivalTime: string;
   returnDepartureTime: string;
-  passengers: Passengers;
+  passengers: {
+    adult: number | null;
+    child: number | null;
+    infant: number | null;
+  };
 }
 
 export default function FlightDetails({ flight }: { flight: Flight }) {
@@ -102,17 +106,7 @@ export default function FlightDetails({ flight }: { flight: Flight }) {
                 <TableCell>{flight.price}</TableCell>
                 <TableCell>{flight.price * 0.1} ৳</TableCell>
                 <TableCell>
-                  {flight.price + flight.price * 0.1} *{" "}
-                  {console.log(
-                    flight.passengers.adult,
-                    flight.passengers.child,
-                    flight.passengers.infant
-                  )}
-                  {parseInt(
-                    flight.passengers.adult +
-                      flight.passengers.child +
-                      flight.passengers.infant
-                  )}
+                  {flight.price + flight.price * 0.1} 
                   ৳
                 </TableCell>
                 <TableCell>{flight.price + flight.price * 0.01} ৳</TableCell>

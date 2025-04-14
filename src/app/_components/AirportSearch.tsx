@@ -43,7 +43,7 @@ const AirportSearch: React.FC<AirportSearchProps> = ({
         {label}
       </label>
       <h1 className="text-center text-[40px] text-[#32d095] mt-1 mb-2">
-        {value ? value.code : airports[0]?.code}
+        {value?.code || '---'}
       </h1>
       <div
         className="bg-[#d7e7f4] rounded flex items-center cursor-pointer"
@@ -51,18 +51,11 @@ const AirportSearch: React.FC<AirportSearchProps> = ({
       >
         <>
           <span className="bg-[#32d095] font-bold p-2 rounded-l">
-            {" "}
             <RiMapPin2Line size={20} />
           </span>
-          {value ? (
-            <span className=" text-gray-800 py-1 px-2 text-sm font-medium text-nowrap overflow-hidden text-ellipsis">
-              {value.name} ({value.code})
-            </span>
-          ) : (
-            <span className=" text-gray-800 py-1 pl-2 text-sm font-medium">
-              {airports[0]?.name}
-            </span>
-          )}
+          <span className="text-gray-800 py-1 px-2 text-sm font-medium text-nowrap overflow-hidden text-ellipsis">
+            {value ? `${value.name} (${value.code})` : 'Select Airport'}
+          </span>
         </>
       </div>
       {isOpen && (
