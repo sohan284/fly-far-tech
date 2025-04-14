@@ -115,7 +115,6 @@ const FlightSearchResultPage = () => {
       }
     }
   }, []);
-  console.log(flights);
 
   const handleSortChange = (type: "cheapest" | "fastest"): void => {
     setSortBy(type);

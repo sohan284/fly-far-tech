@@ -2,7 +2,13 @@
 import Image from "next/image";
 import React, { useState } from "react";
 import bs from "@/app/assets/BS.png";
+import bg from "@/app/assets/BG.png";
+import ek from "@/app/assets/EK.png";
+import ku from "@/app/assets/KU.png";
+import qr from "@/app/assets/QR.png";
 import { IoAirplaneOutline, IoAirplaneSharp } from "react-icons/io5";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaCaretRight } from "react-icons/fa";
 
 interface Flight {
   airline: string;
@@ -22,8 +28,8 @@ interface Flight {
 }
 
 const FlightCard = ({ flight }: { flight: Flight }) => {
-  console.log(flight);
   const [isReturnFlight, setIsReturnFlight] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -34,132 +40,225 @@ const FlightCard = ({ flight }: { flight: Flight }) => {
     })} ${date.getFullYear()}`;
   };
 
+  const handleFlightToggle = (value: boolean) => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setIsReturnFlight(value);
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 100);
+    }, 100);
+  };
+
+  const zoomVariants = {
+    hidden: {
+      scale: 0.8,
+      opacity: 0,
+    },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+      },
+    },
+    exit: {
+      scale: 0.8,
+      opacity: 0,
+      transition: {
+        duration: 0.1,
+      },
+    },
+  };
+
   return (
     <div className="relative mt-6 max-w-[1200px] mx-auto grid lg:grid-cols-5">
       <div className="lg:col-span-4 gap-4 bg-white rounded-xl p-3 border-dotted border-gray-300 border-b-2 lg:border-b-0 lg:border-r-2 h-[220px] grid grid-cols-10">
-        <div className="col-span-2">
-          <div className="w-12 h-12 border-2 border-red-500 rounded-full">
-            <Image
-              width={50}
-              height={50}
-              src={bs}
-              alt={flight.airline}
-              className="max-w-full max-h-full"
-            />
-          </div>
+        <div className="col-span-2 flex justify-between flex-col h-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`to-${isReturnFlight}`}
+              initial="hidden"
+              animate={isAnimating ? "hidden" : "visible"}
+              exit="exit"
+              variants={zoomVariants}
+            >
+              <div className="w-12 h-12 border-2 border-red-500 rounded-full">
+                <Image
+                  width={50}
+                  height={50}
+                  src={
+                    flight.airline === "US-Bangla Airlines"
+                      ? bs
+                      : flight.airline === "Emirates"
+                      ? ek
+                      : flight.airline === "Qatar Airways"
+                      ? qr
+                      : flight.airline === "Novoair"
+                      ? ku
+                      : bg
+                  }
+                  alt={flight.airline}
+                  className="max-w-full max-h-full"
+                />
+              </div>
 
-          <div className="text-sm font-medium my-10 mt-2 text-[#32d095]">
-            {flight.airline}
-          </div>
-          <div className="mt-12">
-            <div className="w-full flex items-center">
-              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-              <div className="flex-1 h-px bg-gray-300 mx-1 relative">
-                <div className="absolute -top-6 w-full text-center text-xs">
-                  {flight?.duration}
-                </div>
-                <div className="absolute -bottom-6 w-full text-center text-xs uppercase">
-                  NON STOP
-                </div>
+              <div className="text-sm font-medium my-10 mt-2 text-[#32d095]">
+                {flight.airline}
               </div>
-              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+            </motion.div>
+          </AnimatePresence>
+          <div className="text-xs text-center text-gray-600">
+            <p className="mb-1">{flight?.duration}</p>
+            <div className="flex items-center justify-center">
+              <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+              <div className="h-px bg-gray-400 flex-1"></div>
+              <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
             </div>
+            <p className="mt-1 uppercase">NON STOP</p>
           </div>
         </div>
-        <div className="col-span-3">
-          {isReturnFlight ? (
-            <div className="flex flex-col text-start text-gray-600">
-              <div className="text-4xl font-medium text-[#32d095]">
-                {flight.to?.code}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            className="col-span-3"
+            key={`from-${isReturnFlight}`}
+            initial="hidden"
+            animate={isAnimating ? "hidden" : "visible"}
+            exit="exit"
+            variants={zoomVariants}
+          >
+            {isReturnFlight ? (
+              <div className="flex flex-col text-start text-gray-600">
+                <div className="text-4xl font-medium text-[#32d095]">
+                  {flight.to?.code}
+                </div>
+                <div className="text-sm">{flight?.to?.name}</div>
+                <div className="text-xs my-1 ">
+                  {flight?.returnDepartureTime}
+                </div>
+                <div className="text-xs text-[#32d095]">
+                  {formatDate(flight?.returnDate)}
+                </div>
               </div>
-              <div className="text-sm">{flight?.to?.name}</div>
-              <div className="text-xs my-1 ">{flight?.returnDepartureTime}</div>
-              <div className="text-xs text-[#32d095]">
-                {formatDate(flight?.returnDate)}
+            ) : (
+              <div className="flex flex-col text-start text-gray-600">
+                <div className="text-4xl font-medium text-[#32d095]">
+                  {flight.from?.code}
+                </div>
+                <div className="text-sm">{flight?.from?.name}</div>
+                <div className="text-xs my-1 ">{flight?.departureTime}</div>
+                <div className="text-xs text-[#32d095]">
+                  {formatDate(flight?.departureDate)}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col text-start text-gray-600">
-              <div className="text-4xl font-medium text-[#32d095]">
-                {flight.from?.code}
-              </div>
-              <div className="text-sm">{flight?.from?.name}</div>
-              <div className="text-xs my-1 ">{flight?.departureTime}</div>
-              <div className="text-xs text-[#32d095]">
-                {formatDate(flight?.departureDate)}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
         <div className="col-span-2 flex justify-center items-center">
           <div className="flex flex-col justify-between h-full">
-            <div>
-              {flight.flightType == "roundWay" ? (
-                <div className="text-[#32d095] relative ">
-                  {isReturnFlight ? (
-                    <div>
-                      <div
-                        onClick={() => setIsReturnFlight(false)}
-                        className=" absolute  cursor-pointer"
-                      >
-                        <IoAirplaneOutline size={70} />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`to-${isReturnFlight}`}
+                initial="hidden"
+                animate={isAnimating ? "hidden" : "visible"}
+                exit="exit"
+                variants={zoomVariants}
+              >
+                {flight.flightType == "roundWay" ? (
+                  <div className="text-[#32d095] relative ">
+                    {isReturnFlight ? (
+                      <div>
+                        <div
+                          onClick={() => handleFlightToggle(false)}
+                          className="absolute cursor-pointer"
+                        >
+                          <IoAirplaneOutline size={70} />
+                        </div>
+                        <div
+                          className={`rotate-180 absolute top-10 left-2 cursor-pointer`}
+                        >
+                          <IoAirplaneSharp size={70} />
+                        </div>
                       </div>
-                      <div
-                        className={`rotate-180 absolute top-10 left-2 cursor-pointer`}
-                      >
-                        <IoAirplaneSharp size={70} />
+                    ) : (
+                      <div>
+                        <div className={`cursor-pointer`}>
+                          <IoAirplaneSharp size={70} />
+                        </div>
+                        <div
+                          onClick={() => handleFlightToggle(true)}
+                          className="rotate-180 absolute top-10 left-2 cursor-pointer"
+                        >
+                          <IoAirplaneOutline size={70} />
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className={`cursor-pointer`}>
-                        <IoAirplaneSharp size={70} />
-                      </div>
-                      <div
-                        onClick={() => setIsReturnFlight(true)}
-                        className="rotate-180 absolute top-10 left-2 cursor-pointer"
-                      >
-                        <IoAirplaneOutline size={70} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-[#32d095]">
-                  <IoAirplaneSharp size={70} />
-                </div>
-              )}
-            </div>
-            <h1 className="mt-16 text-sm">Class-{flight?.flightClass}</h1>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-[#32d095]">
+                    <IoAirplaneSharp size={70} />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+            <h1 className="mt-16 text-sm text-gray-600">
+              Class-{flight?.flightClass}
+            </h1>
           </div>
         </div>
-        <div className="col-span-3">
-          {isReturnFlight ? (
-            <div className="flex flex-col text-end text-gray-600">
-              <div className="text-4xl font-medium text-[#32d095]">
-                {flight.to?.code}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            className="col-span-3"
+            key={`to-${isReturnFlight}`}
+            initial="hidden"
+            animate={isAnimating ? "hidden" : "visible"}
+            exit="exit"
+            variants={zoomVariants}
+          >
+            {isReturnFlight ? (
+              <div className="flex flex-col text-end text-gray-600">
+                <div className="text-4xl font-medium text-[#32d095]">
+                  {flight.to?.code}
+                </div>
+                <div className="text-sm">{flight?.from?.name}</div>
+                <div className="text-xs my-1">{flight?.returnArrivalTime}</div>
+                <div className="text-xs text-[#32d095]">
+                  {formatDate(flight?.returnDate)}
+                </div>
               </div>
-              <div className="text-sm">{flight?.from?.name}</div>
-              <div className="text-xs my-1">{flight?.returnArrivalTime}</div>
-              <div className="text-xs text-[#32d095]">
-                {formatDate(flight?.returnDate)}
+            ) : (
+              <div className="flex flex-col text-end text-gray-600">
+                <div className="text-4xl font-medium text-[#32d095]">
+                  {flight.to?.code}
+                </div>
+                <div className="text-sm">{flight?.to?.name}</div>
+                <div className="text-xs my-1">{flight?.arrivalTime}</div>
+                <div className="text-xs text-[#32d095]">
+                  {formatDate(flight?.departureDate)}
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col text-end text-gray-600">
-              <div className="text-4xl font-medium text-[#32d095]">
-                {flight.to?.code}
-              </div>
-              <div className="text-sm">{flight?.to?.name}</div>
-              <div className="text-xs my-1">{flight?.arrivalTime}</div>
-              <div className="text-xs text-[#32d095]">
-                {formatDate(flight?.departureDate)}
-              </div>
-            </div>
-          )}
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="flex flex-row lg:flex-col justify-between gap-4 bg-white rounded-xl p-6 col-span-1">
+        <div className="text-right text-[#32d095]">
+          <h2 className="text-3xl  font-medium">৳ {flight?.price}</h2>
+          <h2 className="line-through text-sm ">৳ {flight?.price * 1.2}</h2>
+        </div>
+        <div className="text-right text-sm">
+          <button className=" bg-gray-600 text-zinc-200 px-3 py-1 rounded-full">
+            BOOK NOW
+          </button>
+          <p className="uppercase mt-3 text-gray-600 text-xs cursor-pointer flex justify-end ">
+            Flight Details <FaCaretRight size={15} />
+          </p>
         </div>
       </div>
-      <div className="flex flex-col justify-center gap-4 bg-white rounded-xl p-6 col-span-1"></div>
     </div>
   );
 };
