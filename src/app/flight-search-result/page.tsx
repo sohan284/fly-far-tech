@@ -5,7 +5,6 @@ import flights from "../data/flights";
 import { PiAirplaneTiltFill } from "react-icons/pi";
 import FlightCard from "./_components/FlightCard";
 import SearchSectionFlight from "../_components/SearchSectionFlight";
-
 // Define types for your data structures
 interface Airport {
   code: string;
@@ -137,7 +136,13 @@ const FlightSearchResultPage = () => {
 
     setFilteredFlights(sortedFlights);
   };
-  console.log(flights);
+  const totalPassengers = parseInt(
+    String(
+      (searchData?.passengers?.adult || 0) +
+        (searchData?.passengers?.child || 0) +
+        (searchData?.passengers?.infant || 0)
+    )
+  );
 
   const handleReset = (): void => {
     setFilters({
@@ -182,7 +187,8 @@ const FlightSearchResultPage = () => {
                 {searchData?.returnDate
                   ? `- ${formatDate(searchData.returnDate)}`
                   : ""}{" "}
-                | {searchData?.passengers?.adult || 1} Travelers
+                | {totalPassengers}
+                Travelers
               </p>
             </div>
           </div>
@@ -352,6 +358,7 @@ const FlightSearchResultPage = () => {
               filteredFlights.map((flight, index) => (
                 <FlightCard
                   flight={{ ...flight, airlineLogo: flight.airlineLogo || "" }}
+                  passengers={totalPassengers}
                   key={index}
                 />
               ))

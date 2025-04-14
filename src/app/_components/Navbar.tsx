@@ -38,7 +38,7 @@ const Navbar = () => {
             href="#contained-buttons"
             sx={{
               borderRadius: "50px",
-              backgroundColor: "gray",
+              backgroundColor: "#525371",
               color: "white",
               padding: "5px 20px",
             }}
