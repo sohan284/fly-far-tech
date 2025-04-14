@@ -28,6 +28,31 @@ const airlines = [
   "Singapore Airlines",
 ];
 
+const flightClasses = [
+  { class: "Economy", weight: 50 }, // 50% chance
+  { class: "Business", weight: 25 }, // 25% chance
+  { class: "Premium Economy", weight: 10 }, // Remaining 25% split
+  { class: "Premium Business", weight: 5 },
+  { class: "First Class", weight: 5 },
+  { class: "Premium First Class", weight: 5 },
+];
+
+// Function to select a flight class based on weights
+const getRandomFlightClass = (): string => {
+  const totalWeight = flightClasses.reduce((sum, fc) => sum + fc.weight, 0);
+  const random = Math.random() * totalWeight;
+  let cumulativeWeight = 0;
+
+  for (const fc of flightClasses) {
+    cumulativeWeight += fc.weight;
+    if (random <= cumulativeWeight) {
+      return fc.class;
+    }
+  }
+
+  return "Economy"; // Fallback (shouldn't happen)
+};
+
 const flights: Flight[] = [];
 
 // Generate flights dynamically for the given airports and dates
@@ -37,11 +62,13 @@ for (let day = 15; day <= 17; day++) {
     airports.forEach((toAirport) => {
       if (fromAirport.code !== toAirport.code) {
         const flightType = flightId % 2 === 0 ? "roundWay" : "oneWay";
-        const flightClass = flightId % 3 === 0 ? "Business" : "Economy";
+        const flightClass = getRandomFlightClass(); // Use weighted random selection
         const price =
           flightClass === "Business"
             ? 20000 + flightId * 100
-            : 10000 + flightId * 50;
+            : flightClass === "Economy"
+            ? 10000 + flightId * 50
+            : 15000 + flightId * 75; // Adjust price for other classes
 
         // Generate multiple flights per day with different times
         for (let flightIndex = 0; flightIndex < 3; flightIndex++) {

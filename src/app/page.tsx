@@ -14,8 +14,8 @@ import SearchSectionVisa from "./_components/SearchSectionVisa";
 export default function Home() {
   const [activeTab, setActiveTab] = useState(0);
   return (
-    <div>
-      <div className="px-5 mt-10">
+    <div className="bg-[#edf2f6]">
+      <div className="px-5 pt-10">
         {/* Banner Section */}
         <div
           className="max-w-[1620px] mx-auto rounded-lg relative p-8 z-10"

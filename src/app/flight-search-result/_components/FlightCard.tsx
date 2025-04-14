@@ -74,7 +74,7 @@ const FlightCard = ({ flight }: { flight: Flight }) => {
   };
 
   return (
-    <div className="relative mt-6 max-w-[1200px] mx-auto grid lg:grid-cols-5">
+    <div className="relative mt-4 max-w-[1200px] mx-auto grid lg:grid-cols-5">
       <div className="lg:col-span-4 gap-4 bg-white rounded-xl p-3 border-dotted border-gray-300 border-b-2 lg:border-b-0 lg:border-r-2 h-[220px] grid grid-cols-10">
         <div className="col-span-2 flex justify-between flex-col h-full">
           <AnimatePresence mode="wait">

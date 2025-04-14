@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 const Navbar = () => {
   const router = useRouter();
   return (
-    <div className="px-3">
+    <div className="px-3 bg-[#edf2f6]">
       <div className="flex justify-between items-center max-w-[1150px] mx-auto pt-4">
         <Image
           onClick={() => router.push("/")}

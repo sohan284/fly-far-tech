@@ -8,7 +8,7 @@ import { Airport, airports } from "../data/airports";
 import CryptoJS from "crypto-js";
 import { useRouter } from "next/navigation";
 
-const SearchSectionFlight = () => {
+const SearchSectionFlight = ({ isModify = false }) => {
   const router = useRouter();
   const [adult, setAdult] = useState(1);
   const [child, setChild] = useState(0);
@@ -25,6 +25,37 @@ const SearchSectionFlight = () => {
   const [returnDate, setReturnDate] = useState<Date | null>(null);
   const [isZoomedIn, setIsZoomedIn] = useState(true);
 
+  // Load search data from localStorage if available
+  useEffect(() => {
+    const encryptedData = localStorage.getItem("searchData");
+    if (encryptedData) {
+      try {
+        const secretKey = "fly-far-tech"; // Replace with your secret key
+        const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
+        const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+        // Set the state with the decrypted data
+        setSelectedFlight(decryptedData.selectedFlight || "roundWay");
+        setFromAirport(decryptedData.fromAirport || null);
+        setToAirport(decryptedData.toAirport || null);
+        setDepartureDate(
+          decryptedData.departureDate
+            ? new Date(decryptedData.departureDate)
+            : null
+        );
+        setReturnDate(
+          decryptedData.returnDate ? new Date(decryptedData.returnDate) : null
+        );
+        setAdult(decryptedData.passengers?.adult || 1);
+        setChild(decryptedData.passengers?.child || 0);
+        setInfant(decryptedData.passengers?.infant || 0);
+        setFlightClass(decryptedData.flightClass || "Economy");
+      } catch (error) {
+        console.error("Error decrypting search data:", error);
+      }
+    }
+  }, []);
+
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsZoomedIn(false);
     setTimeout(() => {
@@ -34,10 +65,6 @@ const SearchSectionFlight = () => {
       }, 50);
     }, 300);
   };
-
-  useEffect(() => {
-    setIsZoomedIn(true);
-  }, []);
 
   const handleSearchFlight = () => {
     const searchData = {
@@ -63,7 +90,11 @@ const SearchSectionFlight = () => {
 
     // Save the encrypted data to local storage
     localStorage.setItem("searchData", encryptedData);
-    router.push("/flight-search-result");
+    if (isModify) {
+      window.location.reload();
+    } else {
+      router.push("/flight-search-result");
+    }
   };
 
   const radioOptions = [
@@ -74,7 +105,7 @@ const SearchSectionFlight = () => {
 
   return (
     <div>
-      <div className="relative mt-6 max-w-[1200px] mx-auto grid lg:grid-cols-3">
+      <div className="relative max-w-[1200px] mx-auto grid lg:grid-cols-3">
         {/* Left Section */}
         <div className="lg:col-span-2 gap-4 bg-white rounded-xl p-5 border-dotted border-gray-300 border-b-2 lg:border-b-0 lg:border-r-2">
           <SharedRadioGroup

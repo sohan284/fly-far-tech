@@ -4,6 +4,7 @@ import CryptoJS from "crypto-js";
 import flights from "../data/flights";
 import { PiAirplaneTiltFill } from "react-icons/pi";
 import FlightCard from "./_components/FlightCard";
+import SearchSectionFlight from "../_components/SearchSectionFlight";
 
 // Define types for your data structures
 interface Airport {
@@ -63,6 +64,9 @@ const FlightSearchResultPage = () => {
     onePlusStops: false,
   });
 
+  // State to control the visibility of SearchSectionFlight
+  const [showSearchSection, setShowSearchSection] = useState(false);
+
   const normalizeDate = (dateString: string | undefined): string | null => {
     if (!dateString) return null;
     const date = new Date(dateString);
@@ -93,18 +97,20 @@ const FlightSearchResultPage = () => {
           const normalizedReturnDate = decryptedData.returnDate
             ? normalizeDate(decryptedData.returnDate)
             : null;
-
           const matchingFlights = flights.filter((flight) => {
-            console.log(decryptedData);
             const isFlightTypeMatch =
               decryptedData.selectedFlight === flight.flightType;
             const isFromMatch =
               decryptedData.fromAirport?.code === flight.from.code;
             const isToMatch = decryptedData.toAirport?.code === flight.to.code;
-            return isFlightTypeMatch && isFromMatch && isToMatch;
+            const isClassMatch =
+              decryptedData.flightClass === flight.flightClass;
+
+            return (
+              isFlightTypeMatch && isFromMatch && isToMatch && isClassMatch
+            );
           });
 
-          // If no filters are applied, show all flights
           setFilteredFlights(matchingFlights);
         } catch (error) {
           console.error("Error decrypting search data:", error);
@@ -131,6 +137,7 @@ const FlightSearchResultPage = () => {
 
     setFilteredFlights(sortedFlights);
   };
+  console.log(flights);
 
   const handleReset = (): void => {
     setFilters({
@@ -156,10 +163,10 @@ const FlightSearchResultPage = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen p-3 lg:p-0">
-      <div className="max-w-screen-xl mx-auto">
+    <div className="bg-[#edf2f6] min-h-screen p-3 lg:p-0">
+      <div className="max-w-screen-xl mx-auto pt-6">
         {/* Header with search details */}
-        <div className="bg-[#32d095] text-white p-4 rounded-md flex justify-between items-center">
+        <div className="bg-[#32d095] text-white p-4  rounded-md flex justify-between items-center">
           <div className="flex items-center">
             <div className="bg-gray-600 text-[#d7e7f4] rounded-full p-2 mr-4">
               <PiAirplaneTiltFill size={28} />
@@ -179,7 +186,10 @@ const FlightSearchResultPage = () => {
               </p>
             </div>
           </div>
-          <button className="bg-gray-600 text-sm cursor-pointer text-white px-4 py-2 rounded">
+          <button
+            className="bg-gray-600 text-sm cursor-pointer text-white px-4 py-2 rounded"
+            onClick={() => setShowSearchSection(!showSearchSection)} // Toggle visibility
+          >
             MODIFY SEARCH
           </button>
         </div>
@@ -329,6 +339,15 @@ const FlightSearchResultPage = () => {
 
           {/* Flight Results */}
           <div className="flex-1">
+            <div
+              className={`transition-all duration-500 ease-in-out ${
+                showSearchSection
+                  ? "max-h-screen opacity-100"
+                  : "max-h-0 opacity-0"
+              } overflow-hidden`}
+            >
+              <SearchSectionFlight isModify={true} />
+            </div>
             {filteredFlights.length > 0 ? (
               filteredFlights.map((flight, index) => (
                 <FlightCard
