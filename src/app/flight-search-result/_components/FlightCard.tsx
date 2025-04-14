@@ -26,7 +26,7 @@ interface Flight {
 
 const FlightCard = ({ flight }: { flight: Flight }) => {
   return (
-    <div className="relative mt-4 max-w-[1200px] mx-auto grid lg:grid-cols-5">
+    <div className=" mt-4 max-w-[1200px] mx-auto grid lg:grid-cols-5">
       <div className="lg:col-span-4 gap-4 bg-white rounded-xl p-3 border-dotted border-gray-300 border-b-2 lg:border-b-0 lg:border-r-2 h-[220px] ">
         <CardContents flight={flight} />
       </div>

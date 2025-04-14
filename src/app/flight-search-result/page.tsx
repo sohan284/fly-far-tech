@@ -5,6 +5,7 @@ import flights from "../data/flights";
 import { PiAirplaneTiltFill } from "react-icons/pi";
 import FlightCard from "./_components/FlightCard";
 import SearchSectionFlight from "../_components/SearchSectionFlight";
+import { FaPlane, FaSearch } from "react-icons/fa";
 // Define types for your data structures
 interface Airport {
   code: string;
@@ -104,16 +105,19 @@ const FlightSearchResultPage = () => {
           //   ? normalizeDate(decryptedData.returnDate)
           //   : null;
           const matchingFlights = flights.filter((flight) => {
-            const isFlightTypeMatch = decryptedData.selectedFlight === flight.flightType;
-            const isFromMatch = decryptedData.fromAirport?.code === flight.from.code;
+            const isFlightTypeMatch =
+              decryptedData.selectedFlight === flight.flightType;
+            const isFromMatch =
+              decryptedData.fromAirport?.code === flight.from.code;
             const isToMatch = decryptedData.toAirport?.code === flight.to.code;
-            const isClassMatch = decryptedData.flightClass === flight.flightClass;
+            const isClassMatch =
+              decryptedData.flightClass === flight.flightClass;
 
             return (
               isFlightTypeMatch && isFromMatch && isToMatch && isClassMatch
             );
-          }) as unknown as Flight[];  // Add type assertion here
-          
+          }) as unknown as Flight[]; // Add type assertion here
+
           setFilteredFlights(matchingFlights);
         } catch (error) {
           console.error("Error decrypting search data:", error);
@@ -353,8 +357,8 @@ const FlightSearchResultPage = () => {
               className={`transition-all duration-500 ease-in-out ${
                 showSearchSection
                   ? "max-h-screen opacity-100"
-                  : "max-h-0 opacity-0"
-              } overflow-hidden`}
+                  : "max-h-0 opacity-0 overflow-hidden"
+              } `}
             >
               <SearchSectionFlight isModify={true} />
             </div>
@@ -366,8 +370,31 @@ const FlightSearchResultPage = () => {
                 />
               ))
             ) : (
-              <div className="bg-white p-8 rounded-md shadow text-center">
-                <p className="text-lg">No matching flights found.</p>
+              <div className="bg-white p-8 rounded-md shadow text-center w-full h-full flex items-center justify-center">
+                <div className="bg-white p-8 rounded-lg shadow-md text-center w-full flex flex-col items-center justify-center space-y-6">
+                  <div className="relative">
+                    <FaPlane className="text-blue-500 h-16 w-16" />
+                    <div className="absolute top-0 right-0">
+                      <FaSearch className="text-red-500 h-8 w-8" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h2 className="text-2xl font-bold text-gray-800">
+                      No Matching Flights Found
+                    </h2>
+                    <p className="text-gray-600 max-w-md mx-auto">
+                      We {"couldn't"} find any flights matching your search
+                      criteria. Try adjusting your dates or destination.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                    <button className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+                      Back To Home
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
