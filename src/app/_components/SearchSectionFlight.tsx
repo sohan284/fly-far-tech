@@ -19,7 +19,7 @@ const SearchSectionFlight = () => {
     airports.find((airport) => airport.code === "DAC") || null
   );
   const [toAirport, setToAirport] = useState<Airport | null>(
-    airports.find((airport) => airport.code === "DAC") || null
+    airports.find((airport) => airport.code === "CXB") || null
   );
   const [departureDate, setDepartureDate] = useState<Date | null>(null);
   const [returnDate, setReturnDate] = useState<Date | null>(null);

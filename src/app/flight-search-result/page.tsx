@@ -2,14 +2,60 @@
 import React, { useEffect, useState } from "react";
 import CryptoJS from "crypto-js";
 import flights from "../data/flights";
-import Image from "next/image";
 import { PiAirplaneTiltFill } from "react-icons/pi";
+import FlightCard from "./_components/FlightCard";
+
+// Define types for your data structures
+interface Airport {
+  code: string;
+  name: string;
+}
+
+interface Passengers {
+  adult: number;
+  child: number;
+  infant: number;
+}
+
+interface Flight {
+  id: string;
+  airline: string;
+  airlineLogo?: string;
+  flightType: string;
+  from: { code: string };
+  to: { code: string };
+  departureDate: string;
+  returnDate?: string;
+  flightClass: string;
+  passengers: Passengers;
+  price: number;
+  duration?: number;
+}
+
+interface SearchData {
+  fromAirport?: Airport;
+  toAirport?: Airport;
+  departureDate?: string;
+  returnDate?: string;
+  selectedFlight?: string;
+  flightClass?: string;
+  passengers?: Passengers;
+}
+
+interface FilterState {
+  refundable: boolean;
+  nonRefundable: boolean;
+  nonStop: boolean;
+  oneStop: boolean;
+  onePlusStops: boolean;
+}
+
 const FlightSearchResultPage = () => {
-  const [searchData, setSearchData] = useState(null);
-  const [filteredFlights, setFilteredFlights] = useState([]);
-  const [sortBy, setSortBy] = useState("cheapest");
-  const [priceRange, setPriceRange] = useState([0, 20000]);
-  const [filters, setFilters] = useState({
+  const [searchData, setSearchData] = useState<SearchData | null>(null);
+  const [filteredFlights, setFilteredFlights] = useState<Flight[]>([]);
+  const [sortBy, setSortBy] = useState<"cheapest" | "fastest">("cheapest");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+  const [filters, setFilters] = useState<FilterState>({
     refundable: false,
     nonRefundable: false,
     nonStop: false,
@@ -17,7 +63,7 @@ const FlightSearchResultPage = () => {
     onePlusStops: false,
   });
 
-  const normalizeDate = (dateString) => {
+  const normalizeDate = (dateString: string | undefined): string | null => {
     if (!dateString) return null;
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return null;
@@ -33,52 +79,45 @@ const FlightSearchResultPage = () => {
     if (typeof window !== "undefined") {
       const encryptedData = localStorage.getItem("searchData");
       if (encryptedData) {
-        const secretKey = "fly-far-tech";
-        const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
-        const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-        setSearchData(decryptedData);
+        try {
+          const secretKey = "fly-far-tech";
+          const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
+          const decryptedData = JSON.parse(
+            bytes.toString(CryptoJS.enc.Utf8)
+          ) as SearchData;
+          setSearchData(decryptedData);
 
-        const normalizedDepartureDate = normalizeDate(
-          decryptedData.departureDate
-        );
-        const normalizedReturnDate = decryptedData.returnDate
-          ? normalizeDate(decryptedData.returnDate)
-          : null;
+          const normalizedDepartureDate = decryptedData.departureDate
+            ? normalizeDate(decryptedData.departureDate)
+            : null;
+          const normalizedReturnDate = decryptedData.returnDate
+            ? normalizeDate(decryptedData.returnDate)
+            : null;
 
-        const matchingFlights = flights.filter((flight) => {
-          const isType = flight.flightType === decryptedData.selectedFlight;
-          const isFromMatch =
-            flight.from.code === decryptedData.fromAirport?.code;
-          const isToMatch = flight.to.code === decryptedData.toAirport?.code;
-          const isDepartureDateMatch =
-            normalizeDate(flight.departureDate) === normalizedDepartureDate;
-          const isReturnDateMatch =
-            decryptedData.selectedFlight === "roundWay"
-              ? normalizeDate(flight.returnDate) === normalizedReturnDate
-              : true;
-          const isClassMatch = flight.flightClass === decryptedData.flightClass;
-          const isPassengerMatch =
-            flight.passengers.adult >= decryptedData.passengers.adult &&
-            flight.passengers.child >= decryptedData.passengers.child &&
-            flight.passengers.infant >= decryptedData.passengers.infant;
+          const matchingFlights = flights.filter((flight) => {
+            console.log(decryptedData);
+            const isFlightTypeMatch =
+              decryptedData.selectedFlight === flight.flightType;
+            const isFromMatch =
+              decryptedData.fromAirport?.code === flight.from.code;
+            const isToMatch = decryptedData.toAirport?.code === flight.to.code;
+            return isFlightTypeMatch && isFromMatch && isToMatch;
+          });
 
-          return (
-            isType &&
-            isFromMatch &&
-            isToMatch &&
-            isDepartureDateMatch &&
-            isReturnDateMatch &&
-            isClassMatch &&
-            isPassengerMatch
-          );
-        });
-
-        setFilteredFlights(matchingFlights);
+          // If no filters are applied, show all flights
+          setFilteredFlights(matchingFlights);
+        } catch (error) {
+          console.error("Error decrypting search data:", error);
+        }
+      } else {
+        // If no search data is found, show all flights
+        setFilteredFlights(flights as Flight[]);
       }
     }
   }, []);
+  console.log(flights);
 
-  const handleSortChange = (type) => {
+  const handleSortChange = (type: "cheapest" | "fastest"): void => {
     setSortBy(type);
 
     // Sort flights by price or duration
@@ -87,7 +126,6 @@ const FlightSearchResultPage = () => {
         return a.price - b.price;
       } else {
         // For fastest, we would need a duration field
-        // This is a placeholder; you might need to adjust
         return (a.duration || 0) - (b.duration || 0);
       }
     });
@@ -95,7 +133,7 @@ const FlightSearchResultPage = () => {
     setFilteredFlights(sortedFlights);
   };
 
-  const handleReset = () => {
+  const handleReset = (): void => {
     setFilters({
       refundable: false,
       nonRefundable: false,
@@ -106,19 +144,10 @@ const FlightSearchResultPage = () => {
     // Reset price range
     setPriceRange([0, 20000]);
 
-    // Reset filtered flights to original search results
-    // This would need to re-run the original filter logic
+    // Here you would re-run the original filter logic
   };
 
-  const formatTime = (dateString) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return `${date.toLocaleDateString("en-US", {
       weekday: "short",
@@ -128,7 +157,7 @@ const FlightSearchResultPage = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-gray-100 min-h-screen p-3 lg:p-0">
       <div className="max-w-screen-xl mx-auto">
         {/* Header with search details */}
         <div className="bg-[#32d095] text-white p-4 rounded-md flex justify-between items-center">
@@ -158,7 +187,7 @@ const FlightSearchResultPage = () => {
 
         <div className="mt-4 flex gap-4">
           {/* Sidebar Filters */}
-          <div className="w-64 bg-white rounded-md shadow p-4">
+          <div className="w-64 bg-white rounded-md shadow p-4 lg:block hidden">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold">FILTER</h2>
               <button className="text-gray-500 text-sm" onClick={handleReset}>
@@ -303,135 +332,10 @@ const FlightSearchResultPage = () => {
           <div className="flex-1">
             {filteredFlights.length > 0 ? (
               filteredFlights.map((flight, index) => (
-                <div
-                  key={flight.id || index}
-                  className="bg-white p-4 rounded-md shadow mb-4"
-                >
-                  <div className="flex justify-between items-center pb-2 border-b">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 mr-2 flex items-center justify-center">
-                        <Image
-                          width={50}
-                          height={50}
-                          src={
-                            flight.airlineLogo ||
-                            "/airline-logo-placeholder.png"
-                          }
-                          alt={flight.airline}
-                          className="max-w-full max-h-full"
-                        />
-                      </div>
-                      <div>
-                        <div className="font-bold">{flight.airline}</div>
-                        <div className="text-xs text-gray-500">BS-151</div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <div className="text-green-500 font-bold">
-                        BDT {flight.price}
-                      </div>
-                      <div className="text-xs text-gray-400 line-through">
-                        BDT {Math.round(flight.price * 1.12)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Flight details */}
-                  <div className="mt-4 flex justify-between items-center">
-                    <div className="flex flex-col items-center">
-                      <div className="text-lg font-bold">
-                        {flight.from?.code || "DAC"}
-                      </div>
-                      <div className="text-sm">
-                        Hazrat Shahjalal Intl Airport
-                      </div>
-                      <div className="text-base">
-                        {formatTime(flight.departureDate)}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {formatDate(flight.departureDate)}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 px-4 flex flex-col items-center">
-                      <div className="w-full flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                        <div className="flex-1 h-px bg-gray-300 mx-1 relative">
-                          <div className="absolute -top-6 w-full text-center text-xs">
-                            1H 5Min
-                          </div>
-                          <div className="absolute -bottom-6 w-full text-center text-xs uppercase">
-                            NON STOP
-                          </div>
-                        </div>
-                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <div className="text-lg font-bold">
-                        {flight.to?.code || "CXB"}
-                      </div>
-                      <div className="text-sm">COXs Bazar Airport</div>
-                      <div className="text-base">
-                        {formatTime(
-                          new Date(
-                            new Date(flight.departureDate).getTime() +
-                              65 * 60000
-                          )
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {formatDate(flight.departureDate)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bottom section with info and buttons */}
-                  <div className="mt-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                      <div className="text-sm">Refundable</div>
-                      <div className="text-sm">Class- Economy</div>
-                      <div className="flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4 text-green-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a1 1 0 011-1h5.586l.707-.707A1 1 0 0110 3h4a1 1 0 011 1v5.586l.707.707a1 1 0 010 1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span className="text-sm">20 Kg</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="flex items-center text-sm text-gray-600 mr-2">
-                        FLIGHT DETAILS
-                        <svg
-                          className="w-4 h-4 ml-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                      <button className="bg-blue-900 text-white px-4 py-2 rounded text-sm">
-                        BOOK NOW
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <FlightCard
+                  flight={{ ...flight, airlineLogo: flight.airlineLogo || "" }}
+                  key={index}
+                />
               ))
             ) : (
               <div className="bg-white p-8 rounded-md shadow text-center">
