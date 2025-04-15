@@ -36,12 +36,12 @@ const airlines = [
 ];
 
 const flightClasses = [
-  { class: "Economy", weight: 50 },
-  { class: "Business", weight: 25 },
-  { class: "Premium Economy", weight: 10 },
-  { class: "Premium Business", weight: 5 },
-  { class: "First Class", weight: 5 },
-  { class: "Premium First Class", weight: 5 },
+  "Economy",
+  "Premium Economy",
+  "Business",
+  "Premium Business",
+  "First Class",
+  "Premium First Class",
 ];
 
 const fareTypes = ["Refundable", "Non Refundable"];
@@ -88,20 +88,23 @@ const getBaggageAllowance = (flightClass: string) => {
   }
 };
 
-// Function to select a flight class based on weights
-const getRandomFlightClass = (): string => {
-  const totalWeight = flightClasses.reduce((sum, fc) => sum + fc.weight, 0);
-  const random = Math.random() * totalWeight;
-  let cumulativeWeight = 0;
+// Function to calculate flight price based on class and other factors
+const calculatePrice = (flightClass: string, basePrice: number): number => {
+  const classMultipliers = {
+    Economy: 1,
+    "Premium Economy": 1.5,
+    Business: 2.5,
+    "Premium Business": 3,
+    "First Class": 4,
+    "Premium First Class": 5,
+  };
 
-  for (const fc of flightClasses) {
-    cumulativeWeight += fc.weight;
-    if (random <= cumulativeWeight) {
-      return fc.class;
-    }
-  }
-
-  return "Economy"; // Fallback (shouldn't happen)
+  // Apply multiplier based on flight class
+  return (
+    Math.floor(
+      basePrice * classMultipliers[flightClass as keyof typeof classMultipliers]
+    ) + Math.floor(Math.random() * 1000)
+  ); // Add some random variance
 };
 
 // Function to format date as YYYY-MM-DD
@@ -114,114 +117,151 @@ const today = new Date();
 
 const flights: Flight[] = [];
 
-// Generate flights dynamically for 5 days starting from today
+// Generate flights for 30 days starting from today
+const DAYS_TO_GENERATE = 30;
 let flightId = 1;
-for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
+
+for (let dayOffset = 0; dayOffset < DAYS_TO_GENERATE; dayOffset++) {
   // Calculate the date for this iteration
   const currentDate = new Date(today);
   currentDate.setDate(today.getDate() + dayOffset);
   const departureDate = formatDate(currentDate);
 
+  // Loop through all origin airports
   airports.forEach((fromAirport) => {
+    // Loop through all destination airports
     airports.forEach((toAirport) => {
-      if (fromAirport.code !== toAirport.code) {
-        const flightType = flightId % 2 === 0 ? "roundWay" : "oneWay";
-        const flightClass = getRandomFlightClass(); // Use weighted random selection
-        const price =
-          flightClass === "Business"
-            ? 20000 + flightId * 100
-            : flightClass === "Economy"
-            ? 10000 + flightId * 50
-            : 15000 + flightId * 75; // Adjust price for other classes
-        const fareType =
-          fareTypes[Math.floor(Math.random() * fareTypes.length)]; // Random fare type
-        const stops =
-          stopsOptions[Math.floor(Math.random() * stopsOptions.length)]; // Random stops option
-        const baggageAllowance = getBaggageAllowance(flightClass); // Get baggage allowance based on flight class
+      // Skip if origin and destination are the same
+      if (fromAirport.code === toAirport.code) return;
 
-        // Generate multiple flights per day with different times
-        for (let flightIndex = 0; flightIndex < 3; flightIndex++) {
-          const departureHour = 6 + flightIndex * 4; // Flights at 6 AM, 10 AM, 2 PM
-          const departureMinute = Math.floor(Math.random() * 60); // Random minutes
-          const durationMinutes = Math.floor(Math.random() * 120) + 60; // Random duration between 1-3 hours
-          const durationHours = Math.floor(durationMinutes / 60); // Hours part of duration
-          const durationRemainingMinutes = durationMinutes % 60; // Minutes part of duration
+      // Base price calculation based on airports
+      const basePrice = 8000 + Math.floor(Math.random() * 4000);
 
-          const arrivalHour = departureHour + durationHours;
-          const arrivalMinute =
-            (departureMinute + durationRemainingMinutes) % 60;
+      // For each airport pair, create flights with all possible combinations
+      flightClasses.forEach((flightClass) => {
+        stopsOptions.forEach((stops) => {
+          fareTypes.forEach((fareType) => {
+            // Generate both one-way and round-trip options
+            const flightTypes = ["oneWay", "roundWay"];
 
-          // For roundWay flights, calculate return times and dates
-          let returnDate = undefined;
-          let returnDepartureTime = undefined;
-          let returnArrivalTime = undefined;
-          let returnDuration = undefined;
+            flightTypes.forEach((flightType) => {
+              // Generate multiple departure times throughout the day
+              const departureHours = [6, 10, 14, 18, 22]; // Flights at 6AM, 10AM, 2PM, 6PM, 10PM
 
-          if (flightType === "roundWay") {
-            // Calculate return date (random 1-5 days after departure)
-            const returnDaysAfter = Math.floor(Math.random() * 5) + 1; // Random number between 1-5
-            const returnDateObj = new Date(currentDate);
-            returnDateObj.setDate(currentDate.getDate() + returnDaysAfter);
-            returnDate = formatDate(returnDateObj);
+              departureHours.forEach((departureHour) => {
+                const departureMinute = Math.floor(Math.random() * 60);
 
-            const returnDepartureHour = 14 + flightIndex * 2; // Return flights at 2 PM, 4 PM, 6 PM
-            const returnDepartureMinute = Math.floor(Math.random() * 60); // Random minutes
-            const returnDurationMinutes = Math.floor(Math.random() * 120) + 60; // Random duration between 1-3 hours
-            const returnDurationHours = Math.floor(returnDurationMinutes / 60); // Hours part of return duration
-            const returnDurationRemainingMinutes = returnDurationMinutes % 60; // Minutes part of return duration
+                // Calculate duration based on stops
+                const durationMinutes =
+                  stops === "NON STOP"
+                    ? Math.floor(Math.random() * 60) + 90 // 1.5-2.5 hours for non-stop
+                    : Math.floor(Math.random() * 120) + 180; // 3-5 hours for one-stop
 
-            const returnArrivalHour = returnDepartureHour + returnDurationHours;
-            const returnArrivalMinute =
-              (returnDepartureMinute + returnDurationRemainingMinutes) % 60;
+                const durationHours = Math.floor(durationMinutes / 60);
+                const durationRemainingMinutes = durationMinutes % 60;
 
-            returnDepartureTime = `${returnDepartureHour
-              .toString()
-              .padStart(2, "0")}:${returnDepartureMinute
-              .toString()
-              .padStart(2, "0")}`; // Format HH:mm
-            returnArrivalTime = `${returnArrivalHour
-              .toString()
-              .padStart(2, "0")}:${returnArrivalMinute
-              .toString()
-              .padStart(2, "0")}`; // Format HH:mm
-            returnDuration = `${returnDurationHours}h ${returnDurationRemainingMinutes}m`; // Duration in "Xh Ym" format
-          }
+                // Calculate arrival time
+                const arrivalHour = (departureHour + durationHours) % 24;
+                const arrivalMinute =
+                  (departureMinute + durationRemainingMinutes) % 60;
 
-          flights.push({
-            id: `${flightId}-${flightIndex + 1}`, // Unique ID for each flight
-            flightType,
-            from: { name: fromAirport.name, code: fromAirport.code },
-            to: { name: toAirport.name, code: toAirport.code },
-            departureDate,
-            departureTime: `${departureHour
-              .toString()
-              .padStart(2, "0")}:${departureMinute
-              .toString()
-              .padStart(2, "0")}`, // Format HH:mm
-            arrivalTime: `${arrivalHour
-              .toString()
-              .padStart(2, "0")}:${arrivalMinute.toString().padStart(2, "0")}`, // Format HH:mm
-            duration: `${durationHours}h ${durationRemainingMinutes}m`, // Duration in "Xh Ym" format
-            returnDate,
-            returnDepartureTime,
-            returnArrivalTime,
-            returnDuration,
-            passengers: {
-              adult: Math.floor(Math.random() * 5) + 1,
-              child: Math.floor(Math.random() * 4),
-              infant: Math.floor(Math.random() * 4),
-            },
-            flightClass,
-            price,
-            airline: airlines[Math.floor(Math.random() * airlines.length)],
-            fareType,
-            stops,
-            baggageAllowance, // Added baggage allowance field
+                // Price calculation
+                const price = calculatePrice(flightClass, basePrice);
+
+                // Baggage allowance
+                const baggageAllowance = getBaggageAllowance(flightClass);
+
+                // Return flight parameters (for round-trip flights)
+                let returnDate = undefined;
+                let returnDepartureTime = undefined;
+                let returnArrivalTime = undefined;
+                let returnDuration = undefined;
+
+                if (flightType === "roundWay") {
+                  // Return date is between 1-7 days after departure
+                  const returnDaysAfter = Math.floor(Math.random() * 7) + 1;
+                  const returnDateObj = new Date(currentDate);
+                  returnDateObj.setDate(
+                    currentDate.getDate() + returnDaysAfter
+                  );
+                  returnDate = formatDate(returnDateObj);
+
+                  // Return flight departure time
+                  const returnDepartureHour = (departureHour + 2) % 24;
+                  const returnDepartureMinute = Math.floor(Math.random() * 60);
+
+                  // Return flight duration (similar to outbound)
+                  const returnDurationMinutes =
+                    durationMinutes + Math.floor(Math.random() * 30) - 15;
+                  const returnDurationHours = Math.floor(
+                    returnDurationMinutes / 60
+                  );
+                  const returnDurationRemainingMinutes =
+                    returnDurationMinutes % 60;
+
+                  // Return flight arrival time
+                  const returnArrivalHour =
+                    (returnDepartureHour + returnDurationHours) % 24;
+                  const returnArrivalMinute =
+                    (returnDepartureMinute + returnDurationRemainingMinutes) %
+                    60;
+
+                  // Format return times and duration
+                  returnDepartureTime = `${returnDepartureHour
+                    .toString()
+                    .padStart(2, "0")}:${returnDepartureMinute
+                    .toString()
+                    .padStart(2, "0")}`;
+                  returnArrivalTime = `${returnArrivalHour
+                    .toString()
+                    .padStart(2, "0")}:${returnArrivalMinute
+                    .toString()
+                    .padStart(2, "0")}`;
+                  returnDuration = `${returnDurationHours}h ${returnDurationRemainingMinutes}m`;
+                }
+
+                // Create the flight object
+                flights.push({
+                  id: `${flightId}`, // Unique ID for each flight
+                  flightType,
+                  from: { name: fromAirport.name, code: fromAirport.code },
+                  to: { name: toAirport.name, code: toAirport.code },
+                  departureDate,
+                  departureTime: `${departureHour
+                    .toString()
+                    .padStart(2, "0")}:${departureMinute
+                    .toString()
+                    .padStart(2, "0")}`,
+                  arrivalTime: `${arrivalHour
+                    .toString()
+                    .padStart(2, "0")}:${arrivalMinute
+                    .toString()
+                    .padStart(2, "0")}`,
+                  duration: `${durationHours}h ${durationRemainingMinutes}m`,
+                  returnDate,
+                  returnDepartureTime,
+                  returnArrivalTime,
+                  returnDuration,
+                  passengers: {
+                    adult: 1, // Default to 1 adult
+                    child: 0,
+                    infant: 0,
+                  },
+                  flightClass,
+                  price,
+                  airline:
+                    airlines[Math.floor(Math.random() * airlines.length)],
+                  fareType,
+                  stops,
+                  baggageAllowance,
+                });
+
+                flightId++;
+              });
+            });
           });
-
-          flightId++;
-        }
-      }
+        });
+      });
     });
   });
 }

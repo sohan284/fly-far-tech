@@ -18,7 +18,7 @@ export default function Home() {
       <div className="px-5 pt-10">
         {/* Banner Section */}
         <div
-          className="max-w-[1620px] mx-auto rounded-lg relative p-8 z-10"
+          className="max-w-[1620px] mx-auto rounded-lg relative p-4 lg:p-8 z-10"
           style={{
             backgroundImage: `url(${banner.src})`,
             backgroundSize: "cover",

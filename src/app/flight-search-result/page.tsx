@@ -5,8 +5,9 @@ import flights from "../data/flights";
 import { PiAirplaneTiltFill } from "react-icons/pi";
 import FlightCard from "./_components/FlightCard";
 import SearchSectionFlight from "../_components/SearchSectionFlight";
-import { FaPlane, FaSearch } from "react-icons/fa";
-// Define types for your data structures
+import { FaPlaneCircleExclamation } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
+
 interface Airport {
   code: string;
   name: string;
@@ -62,6 +63,7 @@ interface FilterState {
 }
 
 const FlightSearchResultPage = () => {
+  const router = useRouter();
   const [searchData, setSearchData] = useState<SearchData | null>(null);
   const [filteredFlights, setFilteredFlights] = useState<Flight[]>([]);
   const [sortBy] = useState<"cheapest" | "fastest">("cheapest");
@@ -77,17 +79,17 @@ const FlightSearchResultPage = () => {
   // State to control the visibility of SearchSectionFlight
   const [showSearchSection, setShowSearchSection] = useState(false);
 
-  // const normalizeDate = (dateString: string | undefined): string | null => {
-  //   if (!dateString) return null;
-  //   const date = new Date(dateString);
-  //   if (isNaN(date.getTime())) return null;
+  const normalizeDate = (dateString: string | undefined): string | null => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
 
-  //   return new Date(
-  //     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-  //   )
-  //     .toISOString()
-  //     .split("T")[0];
-  // };
+    return new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    )
+      .toISOString()
+      .split("T")[0];
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -101,12 +103,12 @@ const FlightSearchResultPage = () => {
           ) as SearchData;
           setSearchData(decryptedData);
 
-          // const normalizedDepartureDate = decryptedData.departureDate
-          //   ? normalizeDate(decryptedData.departureDate)
-          //   : null;
-          // const normalizedReturnDate = decryptedData.returnDate
-          //   ? normalizeDate(decryptedData.returnDate)
-          //   : null;
+          const normalizeDepartureDate = decryptedData.departureDate
+            ? normalizeDate(decryptedData.departureDate)
+            : null;
+          const normalizeReturnDate = decryptedData.returnDate
+            ? normalizeDate(decryptedData.returnDate)
+            : null;
           const matchingFlights = flights.filter((flight) => {
             const isFlightTypeMatch =
               decryptedData.selectedFlight === flight.flightType;
@@ -115,11 +117,20 @@ const FlightSearchResultPage = () => {
             const isToMatch = decryptedData.toAirport?.code === flight.to.code;
             const isClassMatch =
               decryptedData.flightClass === flight.flightClass;
-
+            const departureDateMatch = decryptedData.departureDate
+              ? normalizeDepartureDate === flight.departureDate
+              : true;
+            const returnDateMatch = decryptedData.returnDate
+              ? normalizeReturnDate === flight.returnDate
+              : true;
             return (
-              isFlightTypeMatch && isFromMatch && isToMatch && isClassMatch
+              isFlightTypeMatch &&
+              isFromMatch &&
+              isToMatch &&
+              isClassMatch &&
+              departureDateMatch && returnDateMatch
             );
-          }) as unknown as Flight[]; // Add type assertion here
+          }) as unknown as Flight[]; 
 
           setFilteredFlights(matchingFlights);
         } catch (error) {
@@ -177,7 +188,7 @@ const FlightSearchResultPage = () => {
       month: "short",
     })} ${date.getFullYear()}`;
   };
-
+  console.log(flights);
   return (
     <div className="bg-[#edf2f6] min-h-screen p-3 lg:p-0">
       <div className="max-w-screen-xl mx-auto pt-6">
@@ -374,13 +385,10 @@ const FlightSearchResultPage = () => {
                 />
               ))
             ) : (
-              <div className="bg-white p-8 rounded-md shadow text-center w-full h-full flex items-center justify-center">
+              <div className="p-8 rounded-md text-center  flex justify-center">
                 <div className="bg-white p-8 rounded-lg shadow-md text-center w-full flex flex-col items-center justify-center space-y-6">
-                  <div className="relative">
-                    <FaPlane className="text-blue-500 h-16 w-16" />
-                    <div className="absolute top-0 right-0">
-                      <FaSearch className="text-red-500 h-8 w-8" />
-                    </div>
+                  <div className="">
+                    <FaPlaneCircleExclamation className="text-[#32d095] h-16 w-16" />
                   </div>
 
                   <div className="space-y-3">
@@ -394,7 +402,10 @@ const FlightSearchResultPage = () => {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                    <button className="flex items-center justify-center gap-2 px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+                    <button
+                      onClick={() => router.push("/")}
+                      className="cursor-pointer flex items-center justify-center gap-2 px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                    >
                       Back To Home
                     </button>
                   </div>

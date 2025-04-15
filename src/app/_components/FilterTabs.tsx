@@ -20,12 +20,12 @@ const FilterTabs: React.FC<FilterTabsProps> = ({ activeTab, setActiveTab }) => {
     },
   ];
   return (
-    <div className="bg-white p-2 mb-6 rounded-full max-w-[600px] mx-auto flex justify-between">
+    <div className="bg-white p-2 mb-6 rounded-full max-w-[600px] mx-auto flex justify-between overflow-hidden">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
-          className={`cursor-pointer text-[12px] lg:text-[16px] px-6 py-2 rounded-full flex flex-wrap justify-center items-center gap-3 font-bold transition-all duration-300 ${
+          className={`cursor-pointer text-[10px] lg:text-[16px] px-6 py-2 rounded-full flex flex-wrap justify-center items-center gap-3 font-bold transition-all duration-300 ${
             activeTab === tab.id
               ? "bg-[#32d095] text-white"
               : "bg-transparent text-[#32d095]"

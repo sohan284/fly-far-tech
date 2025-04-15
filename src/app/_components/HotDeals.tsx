@@ -60,9 +60,9 @@ const HotDeals = () => {
   return (
     <div className="max-w-[1200px] mx-auto">
       {/* Tabs Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row items-center justify-between">
         <h1 className="text-2xl text-gray-800 font-bold">Hot Deals</h1>
-        <div className="bg-[#32d095] p-2 rounded-full flex">
+        <div className="bg-[#32d095] p-2 rounded-full flex overflow-hidden">
           {tabs.map((tab) => (
             <button
               key={tab.id}

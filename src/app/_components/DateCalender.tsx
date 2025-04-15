@@ -9,10 +9,10 @@ interface DateCalenderProps {
 }
 
 // Update the component definition
-export default function DateCalender({ 
-  selectedDate, 
-  setSelectedDate, 
-  minDate 
+export default function DateCalender({
+  selectedDate,
+  setSelectedDate,
+  minDate,
 }: DateCalenderProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -99,12 +99,16 @@ export default function DateCalender({
   const isDateInRange = (date: Date): boolean => {
     const compareDate = new Date(date);
     compareDate.setHours(0, 0, 0, 0);
-  
+
     const compareToday = new Date(today);
     compareToday.setHours(0, 0, 0, 0);
-  
+
     const maxDate = new Date(compareToday);
-    maxDate.setDate(maxDate.getDate() + 10);
+    if (minDate) {
+      maxDate.setDate(maxDate.getDate() + 15);
+    } else {
+      maxDate.setDate(maxDate.getDate() + 10);
+    }
 
     // If minDate is provided (for return date), use it as the minimum
     if (minDate) {
@@ -112,25 +116,25 @@ export default function DateCalender({
       compareMinDate.setHours(0, 0, 0, 0);
       return compareDate >= compareMinDate && compareDate <= maxDate;
     }
-  
+
     return compareDate >= compareToday && compareDate <= maxDate;
   };
-  
+
   // Update the generateCalendarDays function
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-  
+
     const daysInMonth = getDaysInMonth(year, month);
     const firstDayOfMonth = getFirstDayOfMonth(year, month);
-  
+
     const days = [];
-  
+
     // Add empty cells for days before first day of month
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
     }
-  
+
     // Add days of month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
@@ -140,7 +144,7 @@ export default function DateCalender({
         today.getDate() === day &&
         today.getMonth() === month &&
         today.getFullYear() === year;
-  
+
       days.push(
         <div
           key={day}
@@ -157,7 +161,7 @@ export default function DateCalender({
         </div>
       );
     }
-  
+
     return days;
   };
 
@@ -328,17 +332,19 @@ export default function DateCalender({
           <div className="grid grid-cols-7 gap-1">{generateCalendarDays()}</div>
 
           {/* Today Button */}
-          {!minDate && <div className="mt-2 text-center">
-            <button
-              onClick={() => {
-                setCurrentMonth(new Date());
-                handleDateSelect(today);
-              }}
-              className="text-sm text-blue-500 hover:text-blue-700"
-            >
-              Today
-            </button>
-          </div>}
+          {!minDate && (
+            <div className="mt-2 text-center">
+              <button
+                onClick={() => {
+                  setCurrentMonth(new Date());
+                  handleDateSelect(today);
+                }}
+                className="text-sm text-blue-500 hover:text-blue-700"
+              >
+                Today
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

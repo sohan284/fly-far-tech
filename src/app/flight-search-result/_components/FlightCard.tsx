@@ -41,7 +41,9 @@ const FlightCard: React.FC<FlightCardProps> = ({ flight, totalPassengers }) => {
       <div className="flex flex-row lg:flex-col justify-between gap-4 bg-white rounded-xl p-6 col-span-1">
         <div className="text-right text-[#32d095]">
           <h2 className="text-3xl  font-medium">৳ {flight?.price}</h2>
-          <h2 className="line-through text-sm ">৳ {flight?.price * 1.2}</h2>
+          <h2 className="line-through text-sm ">
+            ৳ {(flight?.price * 1.2).toFixed(2)}
+          </h2>
         </div>
         <div className="text-right text-sm">
           <button className=" bg-gray-600 text-zinc-200 px-3 py-1 rounded-full">

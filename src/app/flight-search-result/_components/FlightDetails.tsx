@@ -233,13 +233,18 @@ export default function FlightDetails({
         </div>
         <div className="grid grid-cols-5 pl-4 p-2 text-gray-800 text-sm mx-4 border-b pb-10">
           <p>Adult</p>
-          <p>{flight.price} ৳</p>
-          <p>{flight.price * 0.1} ৳</p>
+          <p>{flight.price.toFixed(2)} ৳</p>
+          <p>{(flight.price * 0.1).toFixed(2)} ৳</p>
           <p>
-            {" "}
-            {flight.price + flight.price * 0.1} * {totalPassengers}৳
+            {(flight.price + flight.price * 0.1).toFixed(2)} * {totalPassengers}
+            ৳
           </p>
-          <p>{(flight.price + flight.price * 0.01) * totalPassengers} ৳</p>
+          <p>
+            {((flight.price + flight.price * 0.01) * totalPassengers).toFixed(
+              2
+            )}{" "}
+            ৳
+          </p>
         </div>
         <div className="flex justify-between mx-4 px-4 text-[#32d095] text-sm font-medium mt-2 pr-10">
           <div>
@@ -248,7 +253,12 @@ export default function FlightDetails({
             <p>Grand Total</p>
           </div>
           <div className="text-end">
-            <p>{(flight.price + flight.price * 0.01) * totalPassengers} ৳</p>
+            <p>
+              {((flight.price + flight.price * 0.01) * totalPassengers).toFixed(
+                2
+              )}{" "}
+              ৳
+            </p>
             <p className="my-1">
               {" "}
               -{" "}

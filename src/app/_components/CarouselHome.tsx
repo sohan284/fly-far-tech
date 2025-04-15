@@ -19,7 +19,7 @@ export default function CarouselHome() {
     autoplay: true,
     autoplaySpeed: 5000,
     arrows: false,
-    appendDots: (dots : string) => (
+    appendDots: (dots: string) => (
       <div
         style={{
           position: "absolute",
@@ -49,7 +49,7 @@ export default function CarouselHome() {
   const sliderImages = [slider1, slider2, slider3, slider4, slider5];
 
   return (
-    <div className="slider-container my-10 max-w-[1200px] mx-auto px-5 lg:px-0 relative">
+    <div className="slider-container my-10 max-w-[1200px] mx-auto lg:px-5 relative">
       <Slider ref={sliderRef} {...settings}>
         {sliderImages.map((image, index) => (
           <div key={index} className="relative w-full h-[220px]">
