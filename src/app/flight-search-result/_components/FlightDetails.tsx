@@ -61,7 +61,16 @@ export default function FlightDetails({
 
       setState({ ...state, [anchor]: open });
     };
-
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    return formatter.format(date);
+  };
   const list = () => (
     <Box
       sx={{
@@ -79,8 +88,8 @@ export default function FlightDetails({
       <h1 className="bg-[#d7e7f4] px-2 p-1 font-semibold text-sm  mx-4 m-6 text-[#32d095]">
         FLIGHT DETAILS
       </h1>
-      <div className="m-4 grid grid-cols-4">
-        <div>
+      <div className="m-4 grid grid-cols-5">
+        <div className="col-span-1">
           <div className="w-12 h-12 border-2 border-red-500 rounded-full">
             <Image
               width={50}
@@ -105,7 +114,111 @@ export default function FlightDetails({
             {flight.airline}
           </div>
         </div>
+        <div className="col-span-4 grid grid-cols-3">
+          <div className="flex flex-col text-start text-gray-600">
+            <p className="text-sm">Depart</p>
+            <div className="text-4xl font-medium text-[#32d095]">
+              {flight.from?.code}
+            </div>
+            <div className="text-sm">{flight?.from?.name}</div>
+            <div className="text-xs my-1 ">{flight?.departureTime}</div>
+            <div className="text-xs text-[#32d095]">
+              {formatDate(flight?.departureDate)}
+            </div>
+          </div>
+          <div className="text-xs text-center text-gray-600 mt-5 mx-8">
+            <p className="mb-1">{flight?.duration}</p>
+            <div className="flex items-center justify-center">
+              <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+              <div className="h-[2px] bg-gray-400 flex-1"></div>
+              <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+            </div>
+          </div>
+          <div className="flex flex-col text-start text-gray-600">
+            <p className="text-sm">Arrival</p>
+            <div className="text-4xl font-medium text-[#32d095]">
+              {flight.to?.code}
+            </div>
+            <div className="text-sm">{flight?.to?.name}</div>
+            <div className="text-xs my-1 ">{flight?.arrivalTime}</div>
+            <div className="text-xs text-[#32d095]">
+              {formatDate(flight?.departureDate)}
+            </div>
+          </div>
+        </div>
       </div>
+      {flight.flightType === "roundWay" && (
+        <div>
+          <div className="px-4 flex w-full justify-between items-center">
+            <div className="h-px bg-gray-700 flex-1"></div>
+            <p className="bg-[#32d095] text-white text-[10px] px-8 py-1 rounded-full">
+              RETURN FLIGHT
+            </p>
+            <div className="h-px bg-gray-700 flex-1"></div>
+          </div>
+          <div className="m-4 grid grid-cols-5">
+            <div className="col-span-1">
+              <div className="w-12 h-12 border-2 border-red-500 rounded-full">
+                <Image
+                  width={50}
+                  height={50}
+                  src={
+                    flight.airline === "US-Bangla Airlines"
+                      ? bs
+                      : flight.airline === "Emirates"
+                      ? ek
+                      : flight.airline === "Qatar Airways"
+                      ? qr
+                      : flight.airline === "Novoair"
+                      ? ku
+                      : bg
+                  }
+                  alt={flight.airline}
+                  className="max-w-full max-h-full"
+                />
+              </div>
+
+              <div className="text-sm font-medium my-10 mt-2 text-[#32d095]">
+                {flight.airline}
+              </div>
+            </div>
+            <div className="col-span-4 grid grid-cols-3">
+              <div className="flex flex-col text-start text-gray-600">
+                <p className="text-sm">Depart</p>
+                <div className="text-4xl font-medium text-[#32d095]">
+                  {flight.to?.code}
+                </div>
+                <div className="text-sm">{flight?.to?.name}</div>
+                <div className="text-xs my-1 ">
+                  {flight?.returnDepartureTime}
+                </div>
+                <div className="text-xs text-[#32d095]">
+                  {formatDate(flight?.returnDate)}
+                </div>
+              </div>
+              <div className="text-xs text-center text-gray-600 mt-5 mx-8">
+                <p className="mb-1">{flight?.duration}</p>
+                <div className="flex items-center justify-center">
+                  <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+                  <div className="h-[2px] bg-gray-400 flex-1"></div>
+                  <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+                </div>
+              </div>
+              <div className="flex flex-col text-start text-gray-600">
+                <p className="text-sm">Arrival</p>
+                <div className="text-4xl font-medium text-[#32d095]">
+                  {flight.from?.code}
+                </div>
+                <div className="text-sm">{flight?.from?.name}</div>
+                <div className="text-xs my-1 ">{flight?.returnArrivalTime}</div>
+                <div className="text-xs text-[#32d095]">
+                  {formatDate(flight?.returnDate)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <h1 className="bg-[#d7e7f4] px-2 p-1 font-semibold text-sm  mx-4 m-6 text-[#32d095]">
         FARE SUMMARY GBDGB
       </h1>
