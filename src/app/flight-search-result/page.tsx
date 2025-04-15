@@ -7,6 +7,7 @@ import FlightCard from "./_components/FlightCard";
 import SearchSectionFlight from "../_components/SearchSectionFlight";
 import { FaPlaneCircleExclamation } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
+import Pagination from "./_components/CustomPagination";
 
 interface Airport {
   code: string;
@@ -66,8 +67,8 @@ const FlightSearchResultPage = () => {
   const router = useRouter();
   const [searchData, setSearchData] = useState<SearchData | null>(null);
   const [filteredFlights, setFilteredFlights] = useState<Flight[]>([]);
-  const [sortBy] = useState<"cheapest" | "fastest">("cheapest");
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+  const [sortBy, setSortBy] = useState<"cheapest" | "fastest">("cheapest");
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 80000]);
   const [filters, setFilters] = useState<FilterState>({
     refundable: false,
     nonRefundable: false,
@@ -75,6 +76,23 @@ const FlightSearchResultPage = () => {
     oneStop: false,
     onePlusStops: false,
   });
+  // Add these state variables to the component
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [flightsPerPage] = useState<number>(10);
+
+  // Add a function to get current flights for pagination
+  const getCurrentFlights = (): Flight[] => {
+    const indexOfLastFlight = currentPage * flightsPerPage;
+    const indexOfFirstFlight = indexOfLastFlight - flightsPerPage;
+    return filteredFlights.slice(indexOfFirstFlight, indexOfLastFlight);
+  };
+
+  // Add a function to handle page changes
+  const paginate = (pageNumber: number): void => {
+    setCurrentPage(pageNumber);
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // State to control the visibility of SearchSectionFlight
   const [showSearchSection, setShowSearchSection] = useState(false);
@@ -91,6 +109,67 @@ const FlightSearchResultPage = () => {
       .split("T")[0];
   };
 
+  const applyFilters = () => {
+    if (!searchData) return;
+
+    // Start with the original search results
+    const normalizeDepartureDate = searchData.departureDate
+      ? normalizeDate(searchData.departureDate)
+      : null;
+    const normalizeReturnDate = searchData.returnDate
+      ? normalizeDate(searchData.returnDate)
+      : null;
+
+    // First filter based on search criteria
+    const matchingFlights = flights.filter((flight) => {
+      const isFlightTypeMatch = searchData.selectedFlight === flight.flightType;
+      const isFromMatch = searchData.fromAirport?.code === flight.from.code;
+      const isToMatch = searchData.toAirport?.code === flight.to.code;
+      const isClassMatch = searchData.flightClass === flight.flightClass;
+      const departureDateMatch = searchData.departureDate
+        ? normalizeDepartureDate === flight.departureDate
+        : true;
+      const returnDateMatch = searchData.returnDate
+        ? normalizeReturnDate === flight.returnDate
+        : true;
+      return (
+        isFlightTypeMatch &&
+        isFromMatch &&
+        isToMatch &&
+        isClassMatch &&
+        departureDateMatch &&
+        returnDateMatch
+      );
+    }) as unknown as Flight[];
+
+    // Then apply the filter conditions
+    const filtered = matchingFlights.filter((flight) => {
+      // Filter by price
+      const isPriceInRange =
+        flight.price >= priceRange[0] && flight.price <= priceRange[1];
+
+      const isFareTypeMatch =
+        (!filters.refundable && !filters.nonRefundable) ||
+        (filters.refundable && flight.fareType === "Refundable") ||
+        (filters.nonRefundable && flight.fareType === "Non Refundable");
+
+      // Filter by stops
+      const isStopsMatch =
+        (!filters.nonStop && !filters.oneStop && !filters.onePlusStops) ||
+        (filters.nonStop && flight.stops === "NON STOP") ||
+        (filters.oneStop && flight.stops === "One Stop") ||
+        (filters.onePlusStops &&
+          (flight.stops === "2 Stops" ||
+            flight.stops === "3 Stops" ||
+            parseInt(flight.stops.split(" ")[0]) > 1));
+
+      return isPriceInRange && isFareTypeMatch && isStopsMatch;
+    });
+
+    setFilteredFlights(filtered);
+  };
+
+  // Modify the useEffect to call the filter function after initial loading
   useEffect(() => {
     if (typeof window !== "undefined") {
       const encryptedData = localStorage.getItem("searchData");
@@ -103,36 +182,7 @@ const FlightSearchResultPage = () => {
           ) as SearchData;
           setSearchData(decryptedData);
 
-          const normalizeDepartureDate = decryptedData.departureDate
-            ? normalizeDate(decryptedData.departureDate)
-            : null;
-          const normalizeReturnDate = decryptedData.returnDate
-            ? normalizeDate(decryptedData.returnDate)
-            : null;
-          const matchingFlights = flights.filter((flight) => {
-            const isFlightTypeMatch =
-              decryptedData.selectedFlight === flight.flightType;
-            const isFromMatch =
-              decryptedData.fromAirport?.code === flight.from.code;
-            const isToMatch = decryptedData.toAirport?.code === flight.to.code;
-            const isClassMatch =
-              decryptedData.flightClass === flight.flightClass;
-            const departureDateMatch = decryptedData.departureDate
-              ? normalizeDepartureDate === flight.departureDate
-              : true;
-            const returnDateMatch = decryptedData.returnDate
-              ? normalizeReturnDate === flight.returnDate
-              : true;
-            return (
-              isFlightTypeMatch &&
-              isFromMatch &&
-              isToMatch &&
-              isClassMatch &&
-              departureDateMatch && returnDateMatch
-            );
-          }) as unknown as Flight[]; 
-
-          setFilteredFlights(matchingFlights);
+          // Initial filtering is handled by applyFilters now
         } catch (error) {
           console.error("Error decrypting search data:", error);
         }
@@ -143,29 +193,43 @@ const FlightSearchResultPage = () => {
     }
   }, []);
 
-  // const handleSortChange = (type: "cheapest" | "fastest"): void => {
-  //   setSortBy(type);
+  // Call applyFilters whenever searchData is updated or filters change
+  useEffect(() => {
+    if (searchData) {
+      applyFilters();
+    }
+  }, [searchData, filters, priceRange, sortBy]);
 
-  //   // Sort flights by price or duration
-  //   const sortedFlights = [...filteredFlights].sort((a, b) => {
-  //     if (type === "cheapest") {
-  //       return a.price - b.price;
-  //     } else {
-  //       // For fastest, we would need a duration field
-  //       return (a.duration || 0) - (b.duration || 0);
-  //     }
-  //   });
+  // Enable the sort functionality - uncomment and update the sort function
+  const handleSortChange = (type: "cheapest" | "fastest"): void => {
+    setSortBy(type);
 
-  //   setFilteredFlights(sortedFlights);
-  // };
-  const totalPassengers = parseInt(
-    String(
-      (searchData?.passengers?.adult || 0) +
-        (searchData?.passengers?.child || 0) +
-        (searchData?.passengers?.infant || 0)
-    )
-  );
+    // Sort flights by price or duration
+    const sortedFlights = [...filteredFlights].sort((a, b) => {
+      if (type === "cheapest") {
+        return a.price - b.price;
+      } else {
+        // For fastest, we need to convert duration string to minutes for comparison
+        const durationToMinutes = (duration: string) => {
+          const parts = duration.split(" ");
+          let totalMinutes = 0;
+          for (let i = 0; i < parts.length; i += 2) {
+            const value = parseInt(parts[i]);
+            const unit = parts[i + 1].toLowerCase();
+            if (unit.includes("h")) totalMinutes += value * 60;
+            if (unit.includes("m")) totalMinutes += value;
+          }
+          return totalMinutes;
+        };
 
+        return durationToMinutes(a.duration) - durationToMinutes(b.duration);
+      }
+    });
+
+    setFilteredFlights(sortedFlights);
+  };
+
+  // Update handleReset to call applyFilters after resetting
   const handleReset = (): void => {
     setFilters({
       refundable: false,
@@ -175,10 +239,19 @@ const FlightSearchResultPage = () => {
       onePlusStops: false,
     });
     // Reset price range
-    setPriceRange([0, 20000]);
+    setPriceRange([0, 80000]);
 
-    // Here you would re-run the original filter logic
+    // Re-run the filter logic
+    applyFilters();
   };
+
+  const totalPassengers = parseInt(
+    String(
+      (searchData?.passengers?.adult || 0) +
+        (searchData?.passengers?.child || 0) +
+        (searchData?.passengers?.infant || 0)
+    )
+  );
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -188,7 +261,7 @@ const FlightSearchResultPage = () => {
       month: "short",
     })} ${date.getFullYear()}`;
   };
-  console.log(flights);
+
   return (
     <div className="bg-[#edf2f6] min-h-screen p-3 lg:p-0">
       <div className="max-w-screen-xl mx-auto pt-6">
@@ -224,7 +297,7 @@ const FlightSearchResultPage = () => {
 
         <div className="mt-4 flex gap-4">
           {/* Sidebar Filters */}
-          <div className="w-64 bg-white rounded-md shadow p-4 lg:block hidden">
+          <div className="w-64 h-screen bg-white rounded-md shadow p-4 lg:block hidden">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold">FILTER</h2>
               <button className="text-gray-500 text-sm" onClick={handleReset}>
@@ -240,7 +313,7 @@ const FlightSearchResultPage = () => {
                     ? "bg-green-500 text-white"
                     : "bg-gray-200"
                 }`}
-                // onClick={() => handleSortChange("cheapest")}
+                onClick={() => handleSortChange("cheapest")}
               >
                 CHEAPEST
               </button>
@@ -250,7 +323,7 @@ const FlightSearchResultPage = () => {
                     ? "bg-green-500 text-white"
                     : "bg-gray-200"
                 }`}
-                // onClick={() => handleSortChange("fastest")}
+                onClick={() => handleSortChange("fastest")}
               >
                 FASTEST
               </button>
@@ -266,7 +339,7 @@ const FlightSearchResultPage = () => {
                 <input
                   type="range"
                   min="0"
-                  max="20000"
+                  max="100000"
                   value={priceRange[1]}
                   onChange={(e) =>
                     setPriceRange([priceRange[0], parseInt(e.target.value)])
@@ -347,20 +420,6 @@ const FlightSearchResultPage = () => {
                   />
                   <span className="text-sm">One Stop</span>
                 </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={filters.onePlusStops}
-                    onChange={() =>
-                      setFilters({
-                        ...filters,
-                        onePlusStops: !filters.onePlusStops,
-                      })
-                    }
-                    className="w-4 h-4 text-green-500 border-gray-300 rounded focus:ring-green-500"
-                  />
-                  <span className="text-sm">One Plus Stops</span>
-                </label>
               </div>
             </div>
           </div>
@@ -376,16 +435,52 @@ const FlightSearchResultPage = () => {
             >
               <SearchSectionFlight isModify={true} />
             </div>
+
             {filteredFlights.length > 0 ? (
-              filteredFlights.map((flight, index) => (
-                <FlightCard
-                  flight={{ ...flight, airlineLogo: flight.airlineLogo || "" }}
-                  totalPassengers={totalPassengers}
-                  key={index}
-                />
-              ))
+              <>
+                {/* Show only current page flights */}
+                {getCurrentFlights().map((flight, index) => (
+                  <FlightCard
+                    flight={{
+                      ...flight,
+                      airlineLogo: flight.airlineLogo || "",
+                    }}
+                    totalPassengers={totalPassengers}
+                    key={index}
+                  />
+                ))}
+                {filteredFlights.length > 0 && (
+                  <div className="bg-white p-4 rounded-md shadow my-4">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-600">
+                        Showing{" "}
+                        {Math.min(
+                          (currentPage - 1) * flightsPerPage + 1,
+                          filteredFlights.length
+                        )}{" "}
+                        -{" "}
+                        {Math.min(
+                          currentPage * flightsPerPage,
+                          filteredFlights.length
+                        )}{" "}
+                        of {filteredFlights.length} flights
+                      </p>
+                      <Pagination
+                        currentPage={currentPage}
+                        totalItems={filteredFlights.length}
+                        itemsPerPage={flightsPerPage}
+                        paginate={paginate}
+                      />
+                      <p className="text-sm text-gray-600">
+                        Page {currentPage} of{" "}
+                        {Math.ceil(filteredFlights.length / flightsPerPage)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="p-8 rounded-md text-center  flex justify-center">
+              <div className="p-8 rounded-md text-center flex justify-center">
                 <div className="bg-white p-8 rounded-lg shadow-md text-center w-full flex flex-col items-center justify-center space-y-6">
                   <div className="">
                     <FaPlaneCircleExclamation className="text-[#32d095] h-16 w-16" />
