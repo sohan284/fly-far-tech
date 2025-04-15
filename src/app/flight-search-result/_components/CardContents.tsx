@@ -6,6 +6,8 @@ import bg from "@/app/assets/BG.png";
 import ek from "@/app/assets/EK.png";
 import ku from "@/app/assets/KU.png";
 import qr from "@/app/assets/QR.png";
+import outlinePlane from "@/app/assets/outlinePlane.png"
+import fillPlane from "@/app/assets/fillPlane.png"
 import { IoAirplaneOutline, IoAirplaneSharp } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 interface Flight {
@@ -72,8 +74,9 @@ const CardContents = ({ flight }: { flight: Flight }) => {
     },
   };
   return (
-    <div className="grid grid-cols-10">
-      <div className="col-span-2 flex justify-between flex-col h-full">
+  <div className="flex flex-col gap-5 lg:mx-2">
+      <div className="grid grid-cols-10">
+      <div className="hidden col-span-2 lg:flex justify-between flex-col h-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={`to-${isReturnFlight}`}
@@ -107,20 +110,11 @@ const CardContents = ({ flight }: { flight: Flight }) => {
             </div>
           </motion.div>
         </AnimatePresence>
-        <div className="text-xs text-center text-gray-600">
-          <p className="mb-1">{flight?.duration}</p>
-          <div className="flex items-center justify-center">
-            <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
-            <div className="h-px bg-gray-400 flex-1"></div>
-            <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
-          </div>
-          <p className="mt-1 uppercase">NON STOP</p>
-        </div>
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
-          className="col-span-3"
+          className="col-span-4 lg:col-span-3"
           key={`from-${isReturnFlight}`}
           initial="hidden"
           animate={isAnimating ? "hidden" : "visible"}
@@ -163,19 +157,20 @@ const CardContents = ({ flight }: { flight: Flight }) => {
               variants={zoomVariants}
             >
               {flight.flightType == "roundWay" ? (
-                <div className="text-[#32d095] relative ">
+                <div className="text-[#32d095]  ">
                   {isReturnFlight ? (
                     <div>
                       <div
                         onClick={() => handleFlightToggle(false)}
-                        className="absolute cursor-pointer"
+                        className=" cursor-pointer"
                       >
                         <IoAirplaneOutline size={70} />
                       </div>
                       <div
-                        className={`rotate-180 absolute top-10 left-2 cursor-pointer`}
+                        onClick={() => handleFlightToggle(true)}
+                        className=" lg:-mt-6 -mt-4 ml-1 cursor-pointer"
                       >
-                        <IoAirplaneSharp size={70} />
+                        <Image src={fillPlane} alt='flight'/>
                       </div>
                     </div>
                   ) : (
@@ -185,29 +180,29 @@ const CardContents = ({ flight }: { flight: Flight }) => {
                       </div>
                       <div
                         onClick={() => handleFlightToggle(true)}
-                        className="rotate-180 absolute top-10 left-2 cursor-pointer"
+                        className=" lg:-mt-6 -mt-4 cursor-pointer"
                       >
-                        <IoAirplaneOutline size={70} />
+                        <Image src={outlinePlane} alt='flight'/>
+                        {/* <IoAirplaneOutline size={70} /> */}
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-[#32d095]">
+                <div className="text-[#32d095] mt-8">
                   <IoAirplaneSharp size={70} />
                 </div>
               )}
             </motion.div>
           </AnimatePresence>
-          <h1 className="mt-16 text-sm text-gray-600">
-            Class-{flight?.flightClass}
-          </h1>
+         
         </div>
+        
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
-          className="col-span-3"
+          className="col-span-4 lg:col-span-3"
           key={`to-${isReturnFlight}`}
           initial="hidden"
           animate={isAnimating ? "hidden" : "visible"}
@@ -239,6 +234,22 @@ const CardContents = ({ flight }: { flight: Flight }) => {
           )}
         </motion.div>
       </AnimatePresence>
+    </div>
+   <div className="flex justify-between">
+   <div className="text-xs text-center text-gray-600">
+          <p className="mb-1">{flight?.duration}</p>
+          <div className="flex items-center justify-center">
+            <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+            <div className="h-px bg-gray-400 flex-1"></div>
+            <div className="h-2 w-2 bg-gray-800 rounded-full"></div>
+          </div>
+          <p className="mt-1 uppercase">NON STOP</p>
+        </div>
+    <h1 className=" text-sm text-gray-600 ">
+            Class - {flight?.flightClass}
+          </h1>
+    </div>
+
     </div>
   );
 };
