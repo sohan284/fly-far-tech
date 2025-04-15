@@ -366,6 +366,7 @@ const FlightSearchResultPage = () => {
               filteredFlights.map((flight, index) => (
                 <FlightCard
                   flight={{ ...flight, airlineLogo: flight.airlineLogo || "" }}
+                  totalPassengers={totalPassengers}
                   key={index}
                 />
               ))

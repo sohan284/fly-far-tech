@@ -10,7 +10,12 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-
+import Image from "next/image";
+import bs from "@/app/assets/BS.png";
+import bg from "@/app/assets/BG.png";
+import ek from "@/app/assets/EK.png";
+import ku from "@/app/assets/KU.png";
+import qr from "@/app/assets/QR.png";
 type Anchor = "right";
 interface Flight {
   airline: string;
@@ -34,11 +39,16 @@ interface Flight {
   };
 }
 
-export default function FlightDetails({ flight }: { flight: Flight }) {
+interface FlightDetailsProps {
+  flight: Flight;
+  totalPassengers: number;
+}
+
+export default function FlightDetails({ flight, totalPassengers }: FlightDetailsProps) {
   const [state, setState] = React.useState({
     right: false,
   });
-
+console.log(totalPassengers)
   const toggleDrawer =
     (anchor: Anchor, open: boolean) =>
     (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -70,6 +80,33 @@ export default function FlightDetails({ flight }: { flight: Flight }) {
       <h1 className="bg-[#d7e7f4] px-2 p-1 font-semibold text-sm  mx-4 m-6 text-[#32d095]">
         FLIGHT DETAILS
       </h1>
+      <div className="m-4 grid grid-cols-4">
+      <div>
+            <div className="w-12 h-12 border-2 border-red-500 rounded-full">
+              <Image
+                width={50}
+                height={50}
+                src={
+                  flight.airline === "US-Bangla Airlines"
+                    ? bs
+                    : flight.airline === "Emirates"
+                    ? ek
+                    : flight.airline === "Qatar Airways"
+                    ? qr
+                    : flight.airline === "Novoair"
+                    ? ku
+                    : bg
+                }
+                alt={flight.airline}
+                className="max-w-full max-h-full"
+              />
+            </div>
+
+            <div className="text-sm font-medium my-10 mt-2 text-[#32d095]">
+              {flight.airline}
+            </div>
+          </div>
+      </div>
       <h1 className="bg-[#d7e7f4] px-2 p-1 font-semibold text-sm  mx-4 m-6 text-[#32d095]">
         FARE SUMMARY GBDGB
       </h1>
@@ -102,66 +139,34 @@ export default function FlightDetails({ flight }: { flight: Flight }) {
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>Adult</TableCell>
+                <TableCell>Passenger</TableCell>
                 <TableCell>{flight.price}</TableCell>
                 <TableCell>{flight.price * 0.1} ৳</TableCell>
                 <TableCell>
-                  {flight.price + flight.price * 0.1} 
+                  {flight.price + flight.price * 0.1} * {totalPassengers}
                   ৳
                 </TableCell>
-                <TableCell>{flight.price + flight.price * 0.01} ৳</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-right border-t border-gray-300 font-medium"
-                >
-                  Total
-                </TableCell>
-                <TableCell className="border-t border-gray-300 text-[#32d095] font-medium">
-                  6199 ৳
-                </TableCell>
+                <TableCell>{(flight.price + flight.price * 0.01)*(totalPassengers)} ৳</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell colSpan={4} className="text-right font-medium">
-                  Discount
+                  <p  className="text-[#32d095] font-medium">Discount</p>
                 </TableCell>
-                <TableCell className="text-[#32d095] font-medium">
-                  660 ৳
+                <TableCell>
+                <p  className="text-[#32d095] font-medium"> - {(((flight.price + flight.price * 0.01)*(totalPassengers))*0.05).toFixed(2)} ৳</p> 
                 </TableCell>
-              </TableRow>
+              </TableRow> 
               <TableRow>
                 <TableCell colSpan={4} className="text-right font-medium">
-                  Grand Total
+                  <p className="text-[#32d095] font-medium">Grand Total</p>
                 </TableCell>
                 <TableCell className="text-[#32d095] font-medium">
-                  5539 ৳
+               <p className="text-[#32d095] font-medium"> {(((flight.price + flight.price * 0.01)*(totalPassengers))*0.95).toFixed(2)}৳ </p>
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
-      </div>
-
-      {/* Baggage Information */}
-      <div className="bg-white p-4 rounded-md shadow-md mt-4">
-        <h3 className="text-lg font-bold text-gray-800">Baggage</h3>
-        <table className="w-full mt-2 text-sm text-gray-600">
-          <thead>
-            <tr>
-              <th className="text-left">Pax Type</th>
-              <th className="text-right">Check-In</th>
-              <th className="text-right">Cabin</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Adult</td>
-              <td className="text-right">20 Kg</td>
-              <td className="text-right">7 Kg</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
 
       {/* Fare Policy */}
@@ -191,7 +196,7 @@ export default function FlightDetails({ flight }: { flight: Flight }) {
       <div className="bg-[#32d095] text-white p-4 fixed bottom-0 right-0 w-[50vw] shadow-lg">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-bold">
-            Total (include VAT): {flight.price}৳
+            Total (include VAT): {(((flight.price + flight.price * 0.01)*(totalPassengers))*0.95).toFixed(2)}৳
           </h3>
           <button className="bg-gray-800 px-4 py-2 rounded">Book & Hold</button>
         </div>
