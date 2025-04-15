@@ -29,9 +29,9 @@ const airlines = [
 ];
 
 const flightClasses = [
-  { class: "Economy", weight: 50 }, // 50% chance
-  { class: "Business", weight: 25 }, // 25% chance
-  { class: "Premium Economy", weight: 10 }, // Remaining 25% split
+  { class: "Economy", weight: 50 }, 
+  { class: "Business", weight: 25 }, 
+  { class: "Premium Economy", weight: 10 },
   { class: "Premium Business", weight: 5 },
   { class: "First Class", weight: 5 },
   { class: "Premium First Class", weight: 5 },
@@ -53,11 +53,24 @@ const getRandomFlightClass = (): string => {
   return "Economy"; // Fallback (shouldn't happen)
 };
 
+// Function to format date as YYYY-MM-DD
+const formatDate = (date: Date): string => {
+  return date.toISOString().split("T")[0];
+};
+
+// Get today's date
+const today = new Date();
+
 const flights: Flight[] = [];
 
-// Generate flights dynamically for the given airports and dates
+// Generate flights dynamically for 5 days starting from today
 let flightId = 1;
-for (let day = 15; day <= 17; day++) {
+for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
+  // Calculate the date for this iteration
+  const currentDate = new Date(today);
+  currentDate.setDate(today.getDate() + dayOffset);
+  const departureDate = formatDate(currentDate);
+
   airports.forEach((fromAirport) => {
     airports.forEach((toAirport) => {
       if (fromAirport.code !== toAirport.code) {
@@ -82,12 +95,19 @@ for (let day = 15; day <= 17; day++) {
           const arrivalMinute =
             (departureMinute + durationRemainingMinutes) % 60;
 
-          // For roundWay flights, calculate return times
+          // For roundWay flights, calculate return times and dates
+          let returnDate = undefined;
           let returnDepartureTime = undefined;
           let returnArrivalTime = undefined;
           let returnDuration = undefined;
 
           if (flightType === "roundWay") {
+            // Calculate return date (random 1-5 days after departure)
+            const returnDaysAfter = Math.floor(Math.random() * 5) + 1; // Random number between 1-5
+            const returnDateObj = new Date(currentDate);
+            returnDateObj.setDate(currentDate.getDate() + returnDaysAfter);
+            returnDate = formatDate(returnDateObj);
+
             const returnDepartureHour = 14 + flightIndex * 2; // Return flights at 2 PM, 4 PM, 6 PM
             const returnDepartureMinute = Math.floor(Math.random() * 60); // Random minutes
             const returnDurationMinutes = Math.floor(Math.random() * 120) + 60; // Random duration between 1-3 hours
@@ -116,7 +136,7 @@ for (let day = 15; day <= 17; day++) {
             flightType,
             from: { name: fromAirport.name, code: fromAirport.code },
             to: { name: toAirport.name, code: toAirport.code },
-            departureDate: `2025-04-${day.toString().padStart(2, "0")}`,
+            departureDate,
             departureTime: `${departureHour
               .toString()
               .padStart(2, "0")}:${departureMinute
@@ -126,10 +146,7 @@ for (let day = 15; day <= 17; day++) {
               .toString()
               .padStart(2, "0")}:${arrivalMinute.toString().padStart(2, "0")}`, // Format HH:mm
             duration: `${durationHours}h ${durationRemainingMinutes}m`, // Duration in "Xh Ym" format
-            returnDate:
-              flightType === "roundWay"
-                ? `2025-04-${(day + 3).toString().padStart(2, "0")}`
-                : undefined,
+            returnDate,
             returnDepartureTime,
             returnArrivalTime,
             returnDuration,

@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { SlCalender } from "react-icons/sl";
 import { FaAngleDown } from "react-icons/fa";
+// Add minDate prop to the interface
 interface DateCalenderProps {
   selectedDate: Date | null;
   setSelectedDate: (date: Date) => void;
+  minDate?: Date | null; // Add this prop for return date validation
 }
 
-export default function DateCalender({ selectedDate, setSelectedDate }: DateCalenderProps) {
+// Update the component definition
+export default function DateCalender({ 
+  selectedDate, 
+  setSelectedDate, 
+  minDate 
+}: DateCalenderProps) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showMonthSelector, setShowMonthSelector] = useState(false);
@@ -40,15 +47,15 @@ export default function DateCalender({ selectedDate, setSelectedDate }: DateCale
     return new Date(year, month, 1).getDay();
   };
 
-  const isDateInPast = (date: Date): boolean => {
-    const compareDate = new Date(date);
-    compareDate.setHours(0, 0, 0, 0);
+  // const isDateInPast = (date: Date): boolean => {
+  //   const compareDate = new Date(date);
+  //   compareDate.setHours(0, 0, 0, 0);
 
-    const compareToday = new Date(today);
-    compareToday.setHours(0, 0, 0, 0);
+  //   const compareToday = new Date(today);
+  //   compareToday.setHours(0, 0, 0, 0);
 
-    return compareDate < compareToday;
-  };
+  //   return compareDate < compareToday;
+  // };
 
   const handleMonthSelect = (monthIndex: number): void => {
     if (
@@ -88,37 +95,60 @@ export default function DateCalender({ selectedDate, setSelectedDate }: DateCale
   };
 
   // Generate calendar days
+  // Add this function near the other date-related functions
+  const isDateInRange = (date: Date): boolean => {
+    const compareDate = new Date(date);
+    compareDate.setHours(0, 0, 0, 0);
+  
+    const compareToday = new Date(today);
+    compareToday.setHours(0, 0, 0, 0);
+  
+    const maxDate = new Date(compareToday);
+    maxDate.setDate(maxDate.getDate() + 10);
+
+    // If minDate is provided (for return date), use it as the minimum
+    if (minDate) {
+      const compareMinDate = new Date(minDate);
+      compareMinDate.setHours(0, 0, 0, 0);
+      return compareDate >= compareMinDate && compareDate <= maxDate;
+    }
+  
+    return compareDate >= compareToday && compareDate <= maxDate;
+  };
+  
+  // Update the generateCalendarDays function
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-
+  
     const daysInMonth = getDaysInMonth(year, month);
     const firstDayOfMonth = getFirstDayOfMonth(year, month);
-
+  
     const days = [];
-
+  
     // Add empty cells for days before first day of month
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
     }
-
+  
     // Add days of month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      const isPast = isDateInPast(date);
+      // const isPast = isDateInPast(date);
+      const isInRange = isDateInRange(date);
       const isToday =
         today.getDate() === day &&
         today.getMonth() === month &&
         today.getFullYear() === year;
-
+  
       days.push(
         <div
           key={day}
-          onClick={() => !isPast && handleDateSelect(date)}
+          onClick={() => isInRange && handleDateSelect(date)}
           className={`w-8 h-8 flex items-center justify-center rounded-full
                      ${isToday ? "bg-blue-100 text-blue-600" : ""}
                      ${
-                       isPast
+                       !isInRange
                          ? "text-gray-300 cursor-not-allowed"
                          : "cursor-pointer text-gray-700 hover:border-[#32d095] hover:border"
                      }`}
@@ -127,7 +157,7 @@ export default function DateCalender({ selectedDate, setSelectedDate }: DateCale
         </div>
       );
     }
-
+  
     return days;
   };
 
@@ -298,7 +328,7 @@ export default function DateCalender({ selectedDate, setSelectedDate }: DateCale
           <div className="grid grid-cols-7 gap-1">{generateCalendarDays()}</div>
 
           {/* Today Button */}
-          <div className="mt-2 text-center">
+          {!minDate && <div className="mt-2 text-center">
             <button
               onClick={() => {
                 setCurrentMonth(new Date());
@@ -308,7 +338,7 @@ export default function DateCalender({ selectedDate, setSelectedDate }: DateCale
             >
               Today
             </button>
-          </div>
+          </div>}
         </div>
       )}
     </div>

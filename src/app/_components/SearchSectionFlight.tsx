@@ -154,6 +154,7 @@ const SearchSectionFlight = ({ isModify = false }) => {
                     <DateCalender
                       selectedDate={returnDate}
                       setSelectedDate={setReturnDate}
+                      minDate={departureDate} 
                     />
                   </div>
                 </div>
