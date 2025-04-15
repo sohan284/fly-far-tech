@@ -38,6 +38,9 @@ interface Flight {
     child: number | null;
     infant: number | null;
   };
+  stops: string;
+  fareType: string;
+  baggageAllowance: { checkedBags: string; cabinBag: string };
 }
 
 interface SearchData {

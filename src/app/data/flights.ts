@@ -17,6 +17,13 @@ interface Flight {
   flightClass: string;
   price: number;
   airline: string;
+  fareType: string; // Added fareType field
+  stops: string; // Added stops field
+  baggageAllowance: {
+    // Added baggage allowance field
+    checkedBags: string;
+    cabinBag: string;
+  };
 }
 
 const airlines = [
@@ -29,13 +36,57 @@ const airlines = [
 ];
 
 const flightClasses = [
-  { class: "Economy", weight: 50 }, 
-  { class: "Business", weight: 25 }, 
+  { class: "Economy", weight: 50 },
+  { class: "Business", weight: 25 },
   { class: "Premium Economy", weight: 10 },
   { class: "Premium Business", weight: 5 },
   { class: "First Class", weight: 5 },
   { class: "Premium First Class", weight: 5 },
 ];
+
+const fareTypes = ["Refundable", "Non Refundable"];
+const stopsOptions = ["NON STOP", "One Stop"];
+
+// Baggage allowance by flight class
+const getBaggageAllowance = (flightClass: string) => {
+  switch (flightClass) {
+    case "Economy":
+      return {
+        checkedBags: "20kg",
+        cabinBag: "7kg",
+      };
+    case "Premium Economy":
+      return {
+        checkedBags: "25kg",
+        cabinBag: "10kg",
+      };
+    case "Business":
+      return {
+        checkedBags: "30kg",
+        cabinBag: "12kg",
+      };
+    case "Premium Business":
+      return {
+        checkedBags: "35kg",
+        cabinBag: "15kg",
+      };
+    case "First Class":
+      return {
+        checkedBags: "40kg",
+        cabinBag: "18kg",
+      };
+    case "Premium First Class":
+      return {
+        checkedBags: "50kg",
+        cabinBag: "20kg",
+      };
+    default:
+      return {
+        checkedBags: "20kg",
+        cabinBag: "7kg",
+      };
+  }
+};
 
 // Function to select a flight class based on weights
 const getRandomFlightClass = (): string => {
@@ -82,6 +133,11 @@ for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
             : flightClass === "Economy"
             ? 10000 + flightId * 50
             : 15000 + flightId * 75; // Adjust price for other classes
+        const fareType =
+          fareTypes[Math.floor(Math.random() * fareTypes.length)]; // Random fare type
+        const stops =
+          stopsOptions[Math.floor(Math.random() * stopsOptions.length)]; // Random stops option
+        const baggageAllowance = getBaggageAllowance(flightClass); // Get baggage allowance based on flight class
 
         // Generate multiple flights per day with different times
         for (let flightIndex = 0; flightIndex < 3; flightIndex++) {
@@ -158,6 +214,9 @@ for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
             flightClass,
             price,
             airline: airlines[Math.floor(Math.random() * airlines.length)],
+            fareType,
+            stops,
+            baggageAllowance, // Added baggage allowance field
           });
 
           flightId++;

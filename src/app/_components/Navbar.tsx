@@ -18,7 +18,7 @@ const Navbar = () => {
           width={140}
           height={60}
         />
-        <div>
+        <div className="flex">
           <Button
             size="small"
             variant="contained"
