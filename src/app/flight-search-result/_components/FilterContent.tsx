@@ -47,7 +47,7 @@ const FilterContent: React.FC<FilterContentProps> = ({
         <button
           className={`px-4 py-2 text-sm rounded ${
             sortBy === "cheapest"
-              ? "bg-green-500 text-white"
+              ? "bg-[#32d095] text-white"
               : "bg-gray-200"
           }`}
           onClick={() => handleSortChange("cheapest")}
@@ -57,7 +57,7 @@ const FilterContent: React.FC<FilterContentProps> = ({
         <button
           className={`px-4 py-2 text-sm rounded ${
             sortBy === "fastest"
-              ? "bg-green-500 text-white"
+              ? "bg-[#32d095] text-white"
               : "bg-gray-200"
           }`}
           onClick={() => handleSortChange("fastest")}
@@ -67,7 +67,7 @@ const FilterContent: React.FC<FilterContentProps> = ({
       </div>
 
       {/* Price Range */}
-      <div className="mb-6">
+      <div className="mb-6 text-[#32d095]">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-bold">Price Range</h3>
           <span className="cursor-pointer">▲</span>
@@ -91,7 +91,7 @@ const FilterContent: React.FC<FilterContentProps> = ({
       </div>
 
       {/* Fare Type */}
-      <div className="mb-6">
+      <div className="mb-6 text-[#32d095]">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-bold">Fare Type</h3>
           <span className="cursor-pointer">▲</span>
@@ -129,7 +129,7 @@ const FilterContent: React.FC<FilterContentProps> = ({
       </div>
 
       {/* Stops */}
-      <div className="mb-6">
+      <div className="mb-6 text-[#32d095]">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-bold">Stops</h3>
           <span className="cursor-pointer">▲</span>
