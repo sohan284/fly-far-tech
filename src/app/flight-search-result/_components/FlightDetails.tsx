@@ -47,7 +47,6 @@ export default function FlightDetails({
   const [state, setState] = React.useState({
     right: false,
   });
-  console.log(totalPassengers);
   const toggleDrawer =
     (anchor: Anchor, open: boolean) =>
     (event: React.KeyboardEvent | React.MouseEvent) => {
