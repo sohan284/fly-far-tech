@@ -36,7 +36,7 @@ const Pagination: React.FC<PaginationProps> = ({
         showLastButton
         sx={{
           "& .MuiPaginationItem-root": {
-            color: "#32d095",
+            color: "#4a5565",
             borderColor: "#32d095",
           },
           "& .Mui-selected": {

@@ -20,7 +20,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({ activeTab, setActiveTab }) => {
     },
   ];
   return (
-    <div className="bg-white p-2 mb-6 rounded-full max-w-[600px] mx-auto flex justify-between overflow-hidden">
+    <div className="bg-white p-2 mb-6 rounded-full max-w-[600px] mx-auto grid grid-cols-4">
       {tabs.map((tab) => (
         <button
           key={tab.id}

@@ -207,7 +207,7 @@ const SearchSectionFlight = ({ isModify = false }) => {
               >
                 <div className="col-span-7">
                   <p className="text-gray-500">
-                    Multi-city booking options will appear here
+                    Multi-city booking options is not implemented yet.
                   </p>
                 </div>
               </div>

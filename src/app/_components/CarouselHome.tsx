@@ -49,7 +49,7 @@ export default function CarouselHome() {
   const sliderImages = [slider1, slider2, slider3, slider4, slider5];
 
   return (
-    <div className="slider-container my-10 max-w-[1200px] mx-auto lg:px-5 relative">
+    <div className="slider-container my-10 max-w-[1200px] mx-auto relative">
       <Slider ref={sliderRef} {...settings}>
         {sliderImages.map((image, index) => (
           <div key={index} className="relative w-full h-[220px]">
