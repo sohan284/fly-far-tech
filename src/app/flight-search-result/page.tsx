@@ -192,7 +192,7 @@ const FlightSearchResultPage = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsLoading(true);
-      const encryptedData = localStorage.getItem("searchData");
+      const encryptedData = sessionStorage.getItem("searchData");
       if (encryptedData) {
         try {
           const secretKey = "fly-far-tech";

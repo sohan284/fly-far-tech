@@ -25,9 +25,8 @@ const SearchSectionFlight = ({ isModify = false }) => {
   const [returnDate, setReturnDate] = useState<Date | null>(null);
   const [isZoomedIn, setIsZoomedIn] = useState(true);
 
-  // Load search data from localStorage if available
   useEffect(() => {
-    const encryptedData = localStorage.getItem("searchData");
+    const encryptedData = sessionStorage.getItem("searchData");
     if (encryptedData) {
       try {
         const secretKey = "fly-far-tech"; // Replace with your secret key
@@ -89,7 +88,7 @@ const SearchSectionFlight = ({ isModify = false }) => {
     ).toString();
 
     // Save the encrypted data to local storage
-    localStorage.setItem("searchData", encryptedData);
+    sessionStorage.setItem("searchData", encryptedData);
     if (isModify) {
       window.location.reload();
     } else {
@@ -154,7 +153,7 @@ const SearchSectionFlight = ({ isModify = false }) => {
                     <DateCalender
                       selectedDate={returnDate}
                       setSelectedDate={setReturnDate}
-                      minDate={departureDate} 
+                      minDate={departureDate}
                     />
                   </div>
                 </div>
