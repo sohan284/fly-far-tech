@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { IoAirplaneOutline, IoAirplaneSharp } from "react-icons/io5";
+import { IoCloseCircle } from "react-icons/io5";
 import SharedRadioGroup from "./SharedRadioGroup";
 import AirportSearch from "./AirportSearch";
 import DateCalender from "./DateCalender";
@@ -24,6 +25,20 @@ const SearchSectionFlight = ({ isModify = false }) => {
   const [departureDate, setDepartureDate] = useState<Date | null>(null);
   const [returnDate, setReturnDate] = useState<Date | null>(null);
   const [isZoomedIn, setIsZoomedIn] = useState(true);
+  const [multiCityFlights, setMultiCityFlights] = useState([
+    {
+      id: 1,
+      fromAirport: airports.find((airport) => airport.code === "DAC") || null,
+      toAirport: airports.find((airport) => airport.code === "CXB") || null,
+      departureDate: null as Date | null,
+    },
+    {
+      id: 2,
+      fromAirport: airports.find((airport) => airport.code === "CXB") || null,
+      toAirport: airports.find((airport) => airport.code === "DAC") || null,
+      departureDate: null as Date | null,
+    },
+  ]);
 
   useEffect(() => {
     const encryptedData = sessionStorage.getItem("searchData");
@@ -49,6 +64,28 @@ const SearchSectionFlight = ({ isModify = false }) => {
         setChild(decryptedData.passengers?.child || 0);
         setInfant(decryptedData.passengers?.infant || 0);
         setFlightClass(decryptedData.flightClass || "Economy");
+
+        // Set multi-city flights if available
+        if (
+          decryptedData.multiCityFlights &&
+          decryptedData.multiCityFlights.length > 0
+        ) {
+          setMultiCityFlights(
+            decryptedData.multiCityFlights.map(
+              (flight: {
+                id: number;
+                fromAirport: Airport | null;
+                toAirport: Airport | null;
+                departureDate: string | null;
+              }) => ({
+                ...flight,
+                departureDate: flight.departureDate
+                  ? new Date(flight.departureDate)
+                  : null,
+              })
+            )
+          );
+        }
       } catch (error) {
         console.error("Error decrypting search data:", error);
       }
@@ -93,6 +130,47 @@ const SearchSectionFlight = ({ isModify = false }) => {
       window.location.reload();
     } else {
       router.push("/flight-search-result");
+    }
+  };
+
+  const handleMultiCityAirportChange = (
+    index: number,
+    type: "from" | "to",
+    airport: Airport | null
+  ) => {
+    const updatedFlights = [...multiCityFlights];
+    if (type === "from") {
+      updatedFlights[index].fromAirport = airport;
+    } else {
+      updatedFlights[index].toAirport = airport;
+    }
+    setMultiCityFlights(updatedFlights);
+  };
+
+  const handleMultiCityDateChange = (index: number, date: Date | null) => {
+    const updatedFlights = [...multiCityFlights];
+    updatedFlights[index].departureDate = date;
+    setMultiCityFlights(updatedFlights);
+  };
+
+  const addMultiCityFlight = () => {
+    const lastFlight = multiCityFlights[multiCityFlights.length - 1];
+    setMultiCityFlights([
+      ...multiCityFlights,
+      {
+        id: multiCityFlights.length + 1,
+        fromAirport: lastFlight.toAirport,
+        toAirport: null,
+        departureDate: null,
+      },
+    ]);
+  };
+
+  const removeMultiCityFlight = (id: number) => {
+    if (multiCityFlights.length > 2) {
+      setMultiCityFlights(
+        multiCityFlights.filter((flight) => flight.id !== id)
+      );
     }
   };
 
@@ -198,17 +276,62 @@ const SearchSectionFlight = ({ isModify = false }) => {
 
             {selectedFlight === "multiCity" && (
               <div
-                className={`grid grid-cols-7 gap-4 transition-all duration-300 ease-in-out ${
+                className={`transition-all duration-300 ease-in-out ${
                   isZoomedIn
                     ? "transform scale-100 opacity-100"
                     : "transform scale-90 opacity-0"
                 }`}
               >
-                <div className="col-span-7">
-                  <p className="text-gray-500">
-                    Multi-city booking options is not implemented yet.
-                  </p>
-                </div>
+                {multiCityFlights.map((flight, index) => (
+                  <div key={flight.id} className="mb-6 pb-4 relative">
+                    <div className="grid grid-cols-7 gap-4">
+                      <div className="lg:col-span-3 col-span-7">
+                        <AirportSearch
+                          label={``}
+                          value={flight.fromAirport}
+                          onChange={(airport) =>
+                            handleMultiCityAirportChange(index, "from", airport)
+                          }
+                        />
+                      </div>
+                      <div className="text-[#32d095] relative hidden lg:block col-span-1">
+                        <div>
+                          <IoAirplaneSharp size={70} />
+                        </div>
+                      </div>
+                      <div className="lg:col-span-3 col-span-7">
+                        <AirportSearch
+                          label={``}
+                          value={flight.toAirport}
+                          onChange={(airport) =>
+                            handleMultiCityAirportChange(index, "to", airport)
+                          }
+                        />
+                        <div className="mt-3">
+                          <DateCalender
+                            selectedDate={flight.departureDate}
+                            setSelectedDate={(date) =>
+                              handleMultiCityDateChange(index, date)
+                            }
+                            minDate={
+                              index > 0
+                                ? multiCityFlights[index - 1].departureDate
+                                : null
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {index > 1 && (
+                      <button
+                        onClick={() => removeMultiCityFlight(flight.id)}
+                        className="absolute top-0 right-0 text-red-500"
+                      >
+                        <IoCloseCircle size={24} />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -260,13 +383,23 @@ const SearchSectionFlight = ({ isModify = false }) => {
             </div>
           </div>
 
-          {/* Search Button */}
-          <button
-            onClick={handleSearchFlight}
-            className="w-full bg-[#32d095] text-white font-bold py-2 text-sm rounded-sm cursor-pointer"
-          >
-            SEARCH FOR FLIGHT
-          </button>
+          <div>
+            <button
+              disabled={selectedFlight === "multiCity"}
+              onClick={handleSearchFlight}
+              className="w-full bg-[#32d095] text-white font-bold py-2 text-sm rounded-sm cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              SEARCH FOR FLIGHT
+            </button>
+            {selectedFlight === "multiCity" && (
+              <button
+                onClick={addMultiCityFlight}
+                className="w-full bg-[#32d095] text-white font-bold py-2 text-sm rounded-sm cursor-pointer mt-4 uppercase"
+              >
+                <span>Add city</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
